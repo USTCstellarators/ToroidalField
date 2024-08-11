@@ -16,7 +16,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering",
     ],
-    url="",
+    url="https://github.com/USTCstellarators/ToroidalField",
     author="Ke Liu",
     author_email="lk2020@mail.ustc.edu.cn",
     license="GNU 3.0",
