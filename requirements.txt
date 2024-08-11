@@ -1,0 +1,6 @@
+numpy
+matplotlib
+scipy
+xarray
+py_spec
+booz_xform
