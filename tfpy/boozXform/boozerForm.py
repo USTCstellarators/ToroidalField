@@ -16,7 +16,7 @@ class BoozerForm(Booz_xform):
         self.verbose = 0
         self.read_boozmn(fileName)
 
-    def surface(self, surfaceIndex: int=-1, asym: bool=True, reverseToroidal: bool=False, reverseOmegaAngle:bool=True) -> Surface_BoozerAngle: 
+    def getSurface(self, surfaceIndex: int=-1, asym: bool=True, reverseToroidal: bool=False, reverseOmegaAngle:bool=True) -> Surface_BoozerAngle: 
         nfp = int(self.nfp)
         mpol = int(self.mboz) - 1
         ntor = int(self.nboz) 
