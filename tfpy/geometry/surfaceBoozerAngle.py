@@ -39,6 +39,17 @@ class Surface_BoozerAngle(Surface):
         self.reverseToroidalAngle = reverseToroidalAngle
         self.reverseOmegaAngle = reverseOmegaAngle
 
+    @property
+    def stellSym(self) -> bool:
+        return (not self.r.imIndex) and (not self.z.reIndex) and (not self.omega.reIndex)
+
+    def changeStellSym(self, stellSym: bool) -> None: 
+        self.r.reIndex, self.z.imIndex, self.omega.imIndex = True, True, True 
+        if stellSym: 
+            self.r.imIndex, self.z.reIndex, self.omega.reIndex = False, False, False
+        else: 
+            self.r.imIndex, self.z.reIndex, self.omega.reIndex = True, True, True
+
     def changeResolution(self, mpol: int, ntor: int): 
         self.r = changeResolution(self.r, mpol, ntor)
         self.z = changeResolution(self.z, mpol, ntor)
