@@ -81,7 +81,7 @@ class Surface_cylindricalAngle(Surface):
             pointData = kwargs
         )
 
-    def toVacuumVMEC(self, fileName: str, params: Dict=dict()) -> None: 
+    def toVacuumVMEC(self, fileName: str='vacuum', params: Dict=dict()) -> None: 
         
         if "lasym" not in params.keys():
             params["lasym"] = True 
