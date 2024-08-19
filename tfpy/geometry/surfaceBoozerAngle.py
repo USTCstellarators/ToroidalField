@@ -134,9 +134,9 @@ class Surface_BoozerAngle(Surface):
     def toCylinder_dft(self, mpol: int=None, ntor: int=None, xtol: float=1e-13) -> Surface_cylindricalAngle:
         
         if mpol is None:
-            mpol = 2*self.mpol+1
+            mpol = self.mpol+self.omega.mpol+1
         if ntor is None:
-            ntor = 2*self.ntor+1
+            ntor = self.ntor+self.omega.ntor+1
         deltaTheta = 2*np.pi / (2*mpol+1) 
         deltaPhi = 2*np.pi / self.nfp / (2*ntor+1) 
         sampleTheta, samplePhi = np.arange(2*mpol+1)*deltaTheta, -np.arange(2*ntor+1)*deltaPhi 
@@ -324,7 +324,7 @@ class Surface_BoozerAngle(Surface):
         with h5py.File(filename+".h5", 'w') as f:
             f.create_dataset(
                 "resolution", 
-                data = (self.nfp, self.mpol, self.ntor, int(stellsym), int(self.reverseToroidalAngle), int(self.reverseOmegaAngle)), 
+                data = (self.nfp, self.mpol, self.ntor, self.omega.mpol, self.omega.ntor, int(stellsym), int(self.reverseToroidalAngle), int(self.reverseOmegaAngle)), 
                 dtype = "int32"
             )
             f.create_group("r") 
@@ -344,9 +344,11 @@ class Surface_BoozerAngle(Surface):
             nfp = int(f["resolution"][0])
             mpol = int(f["resolution"][1])
             ntor = int(f["resolution"][2])
-            stellsym = bool(f["resolution"][3])
-            reverseToroidalAngle = bool(f["resolution"][4])
-            reverseOmegaAngle = bool(f["resolution"][5])
+            omega_mpol = int(f["resolution"][3])
+            omega_ntor = int(f["resolution"][4])
+            stellsym = bool(f["resolution"][5])
+            reverseToroidalAngle = bool(f["resolution"][6])
+            reverseOmegaAngle = bool(f["resolution"][7])
             if stellsym:
                 _r = ToroidalField(
                     nfp=nfp, mpol=mpol, ntor=ntor, 
@@ -361,7 +363,7 @@ class Surface_BoozerAngle(Surface):
                     reIndex=False
                 )
                 _omega = ToroidalField(
-                    nfp=nfp, mpol=mpol, ntor=ntor, 
+                    nfp=nfp, mpol=omega_mpol, ntor=omega_ntor, 
                     reArr=np.zeros_like(f["omega"]["im"][:]),
                     imArr=f["omega"]["im"][:],  
                     reIndex=False
@@ -378,7 +380,7 @@ class Surface_BoozerAngle(Surface):
                     imArr=f["z"]["im"][:] 
                 )
                 _omega = ToroidalField(
-                    nfp=nfp, mpol=mpol, ntor=ntor, 
+                    nfp=nfp, mpol=omega_mpol, ntor=omega_ntor, 
                     reArr=f["omega"]["re"][:],
                     imArr=f["omega"]["im"][:]
                 )

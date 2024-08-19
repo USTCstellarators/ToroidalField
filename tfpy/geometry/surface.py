@@ -12,8 +12,9 @@ class Surface:
 
     def __init__(self, r: ToroidalField, z: ToroidalField) -> None:
         assert r.nfp == z.nfp
-        # assert r.mpol == z.mpol
-        # assert r.ntor == z.ntor
+        assert r.mpol == z.mpol
+        assert r.ntor == z.ntor
+        self._mpol, self._ntor = r.mpol, r.ntor
         self.r = r
         self.z = z
 
@@ -21,13 +22,13 @@ class Surface:
     def nfp(self) -> int:
         return self.r.nfp 
 
-    # @property
-    # def mpol(self) -> int:
-    #     return self.r.mpol 
+    @property
+    def mpol(self) -> int:
+        return self._mpol 
 
-    # @property
-    # def ntor(self) -> int: 
-    #     return self.r.ntor 
+    @property
+    def ntor(self) -> int: 
+        return self._ntor 
 
     @property
     def dRdTheta(self) -> ToroidalField:
@@ -46,6 +47,7 @@ class Surface:
         return derivateTor(self.z) 
 
     def changeResolution(self, mpol: int, ntor: int): 
+        self._mpol, self._ntor = mpol, ntor
         self.r = changeResolution(self.r, mpol, ntor)
         self.z = changeResolution(self.z, mpol, ntor)
 
