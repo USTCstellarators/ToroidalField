@@ -1,3 +1,1 @@
-__version__ = 1.1
-
 from .vmec2spec import vmecOut2spec
