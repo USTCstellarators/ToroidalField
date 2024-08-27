@@ -176,11 +176,11 @@ class ToroidalField:
         thetaGrid, zetaGrid = np.meshgrid(thetaArr, zetaArr) 
         valueGrid = self.getValue(thetaGrid, zetaGrid) 
         if fill: 
-            ctrig = ax.contourf(zetaGrid, thetaGrid, valueGrid, cmap=cm.rainbow)
+            ctrig = ax.contourf(zetaGrid, thetaGrid, valueGrid, cmap=cm.rainbow, **kwargs)
             colorbar = fig.colorbar(ctrig)
             colorbar.ax.tick_params(labelsize=18) 
         else: 
-            ctrig = ax.contour(zetaGrid, thetaGrid, valueGrid, cmap=cm.rainbow)
+            ctrig = ax.contour(zetaGrid, thetaGrid, valueGrid, cmap=cm.rainbow, **kwargs)
             colorbar = fig.colorbar(ctrig)
             colorbar.ax.tick_params(labelsize=18) 
         if kwargs.get("toroidalLabel") == None:
