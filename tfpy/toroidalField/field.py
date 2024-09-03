@@ -54,25 +54,21 @@ class ToroidalField:
 
     @property
     def reMatrix(self) -> np.ndarray: 
-        rematrix = np.zeros((2*self.mpol+1, 2*self.ntor+1)) 
         if not self.reIndex:
-            return rematrix 
-        for index, value in enumerate(self.reArr):
-            m, n = self.indexReverseMap(index) 
-            rematrix[self.mpol+m, self.ntor+n] = value 
-            rematrix[self.mpol-m, self.ntor-n] = value
-        return rematrix
+            return np.zeros((2*self.mpol+1, 2*self.ntor+1))
+        else:
+            return (
+                np.concatenate((np.flip(self.reArr), self.reArr[1:]))
+            ).reshape((2*self.mpol+1, 2*self.ntor+1))
 
     @property
     def imMatrix(self) -> np.ndarray: 
-        immatrix = np.zeros((2*self.mpol+1, 2*self.ntor+1)) 
         if not self.imIndex:
-            return immatrix 
-        for index, value in enumerate(self.imArr):
-            m, n = self.indexReverseMap(index) 
-            immatrix[self.mpol+m, self.ntor+n] = value 
-            immatrix[self.mpol-m, self.ntor-n] = -value
-        return immatrix
+            return np.zeros((2*self.mpol+1, 2*self.ntor+1))
+        else:
+            return (
+                np.concatenate((-np.flip(self.imArr), self.imArr[1:]))
+            ).reshape((2*self.mpol+1, 2*self.ntor+1))
 
     @property
     def xm(self) -> np.ndarray:
