@@ -319,6 +319,20 @@ class Surface_BoozerAngle(Surface):
         plt.axis("equal")
         return fig
 
+    def toVTK(self, vtkname: str, ntheta: int=256, nzeta: int=256, field: ToroidalField=None, **kwargs):
+        from pyevtk.hl import gridToVTK
+        thetaArr = np.linspace(0, 2*np.pi, ntheta) 
+        zetaArr = np.linspace(0, 2*np.pi, nzeta) 
+        zetaGrid, thetaGrid = np.meshgrid(zetaArr, thetaArr)
+        rArr = self.r.getValue(thetaGrid, zetaGrid)
+        zArr = self.z.getValue(thetaGrid, zetaGrid)
+        phiArr = self.getPhi(thetaGrid, zetaGrid)
+        xArr = rArr * np.cos(phiArr)
+        yArr = rArr * np.sin(phiArr)
+        if field is not None:
+            kwargs.setdefault('datas', field.getValue(thetaGrid,zetaGrid).reshape((1,ntheta,nzeta)))
+        gridToVTK(vtkname, xArr.reshape((1,ntheta,nzeta)), yArr.reshape((1,ntheta,nzeta)), zArr.reshape((1,ntheta,nzeta)), pointData=kwargs)
+
     def writeH5(self, filename="surf"):
         stellsym = (not self.r.imIndex) and (not self.z.reIndex) and (not self.omega.reIndex)
         with h5py.File(filename+".h5", 'w') as f:
