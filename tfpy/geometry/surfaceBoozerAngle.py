@@ -92,6 +92,13 @@ class Surface_BoozerAngle(Surface):
         zArr = self.z.getValue(thetaGrid, zetaGrid)
         return rArr, zArr
 
+    def getXYZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray) -> Tuple[np.ndarray]: 
+        rArr, zArr = self.getRZ(thetaGrid, zetaGrid)
+        phiArr = self.getPhi(thetaGrid, zetaGrid)
+        xArr = np.cos(phiArr) * rArr
+        yArr = np.sin(phiArr) * rArr
+        return xArr, yArr, zArr
+
     def getZeta(self, theta: np.ndarray, phi: np.ndarray, xtol: float=1e-15) -> np.ndarray:
         def zetaValue(zeta, theta, phi):
             if self.reverseToroidalAngle and not self.reverseOmegaAngle:
