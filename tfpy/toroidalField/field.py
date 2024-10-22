@@ -156,7 +156,12 @@ class ToroidalField:
 
     # plotting ###############################################################
     def plot_plt(self, ntheta: int=128, nzeta: int=128, fig=None, ax=None, onePeriod: bool=True, fill: bool=True, **kwargs):
-        from matplotlib import cm
+        if kwargs.get('cmap') is None:
+            try:
+                from cmap import Colormap
+                kwargs.update({'cmap': Colormap('tol:sunset').to_matplotlib()})
+            except:
+                pass
         import matplotlib.pyplot as plt 
         thetaArr = np.linspace(0, 2*np.pi, ntheta)
         thetaValue =  np.linspace(0, 2*np.pi, 3)
@@ -172,11 +177,11 @@ class ToroidalField:
         thetaGrid, zetaGrid = np.meshgrid(thetaArr, zetaArr) 
         valueGrid = self.getValue(thetaGrid, zetaGrid) 
         if fill: 
-            ctrig = ax.contourf(zetaGrid, thetaGrid, valueGrid, cmap=cm.rainbow, **kwargs)
+            ctrig = ax.contourf(zetaGrid, thetaGrid, valueGrid, **kwargs)
             colorbar = fig.colorbar(ctrig)
             colorbar.ax.tick_params(labelsize=18) 
         else: 
-            ctrig = ax.contour(zetaGrid, thetaGrid, valueGrid, cmap=cm.rainbow, **kwargs)
+            ctrig = ax.contour(zetaGrid, thetaGrid, valueGrid, **kwargs)
             colorbar = fig.colorbar(ctrig)
             colorbar.ax.tick_params(labelsize=18) 
         if kwargs.get("toroidalLabel") == None:
