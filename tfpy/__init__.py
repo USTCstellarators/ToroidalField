@@ -1,3 +1,9 @@
-__version__ = 1.1
-
-from .vmec2spec import vmecOut2spec
+submodules = [
+    'boozXform',
+    'geometry',
+    'misc',
+    'spec',
+    'toroidalField',
+    'vmec',
+    'vmec2spec'
+]

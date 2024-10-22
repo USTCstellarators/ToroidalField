@@ -1,0 +1,34 @@
+[build-system]
+requires = [
+    "meson",
+    "meson-python",
+]
+build-backend = "mesonpy"
+
+
+[project]
+name = "tfpy"
+version = "2.0.0"
+description = "A personal Python package for processing toroidal field"
+readme = "README.md"
+authors = [
+    {name="Ke Liu", email="lk2020@mail.ustc.edu.cn"},
+]
+maintainers = [
+    {name="Ke Liu", email="lk2020@mail.ustc.edu.cn"},
+]
+license = {text = "GNU 3.0"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "scipy",
+    "xarray",
+    "py_spec",
+    "booz_xform"
+]

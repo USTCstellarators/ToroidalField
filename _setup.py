@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="tfpy",
     version=__version__,
-    description="Direct Construction of Stellarator Shapes",
+    description="A personal Python package for processing toroidal field",
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
