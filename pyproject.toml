@@ -30,5 +30,6 @@ dependencies = [
     "scipy",
     "xarray",
     "py_spec",
-    "booz_xform"
+    "booz_xform"，
+    "cmap"
 ]
