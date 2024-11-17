@@ -33,7 +33,10 @@ def plotProfile(self, name: str, xAxis: str='sqrtflux', ax=None, **kwargs):
     else:
         print('There is no figure because of the wrong axis... ')
         return
-    from collections import Iterable
+    try:
+        from collections.abc import Iterable
+    except ImportError:
+        from collections import Iterable
     if name == "iota":
         yArr = np.zeros(2*self.ns-1)
         kwargs.update({"ylabel": r"$\iota$"})

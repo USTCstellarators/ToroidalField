@@ -11,7 +11,10 @@ def transBoozer(self, surfIndex: int, valueField: ToroidalField , mpol: int=None
     
     import numpy as np
     from scipy.optimize import fixed_point
-    from collections import Iterable
+    try:
+        from collections.abc import Iterable
+    except ImportError:
+        from collections import Iterable
 
     _surf, lam = self.getSurface(surfIndex)
     iota = self.iota(surfIndex)
