@@ -1,12 +1,14 @@
 import setuptools
-from tfpy import __version__
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+    
+REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
 
 setuptools.setup(
     name="tfpy",
-    version=__version__,
+    version="2.1.0",
     description="A personal Python package for processing toroidal field",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,5 +23,6 @@ setuptools.setup(
     author_email="lk2020@mail.ustc.edu.cn",
     license="GNU 3.0",
     packages=setuptools.find_packages(),
+    install_requires=REQUIREMENTS
 )
 

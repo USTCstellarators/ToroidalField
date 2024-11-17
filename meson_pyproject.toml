@@ -8,7 +8,7 @@ build-backend = "mesonpy"
 
 [project]
 name = "tfpy"
-version = "2.0.0"
+version = "2.1.0"
 description = "A personal Python package for processing toroidal field"
 readme = "README.md"
 authors = [
@@ -30,6 +30,7 @@ dependencies = [
     "scipy",
     "xarray",
     "py_spec",
-    "booz_xform"，
+    "booz_xform",
+    "h5py",
     "cmap"
 ]
