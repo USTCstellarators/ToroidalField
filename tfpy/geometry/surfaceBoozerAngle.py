@@ -10,7 +10,7 @@ from .surface import Surface
 from .surfaceCylindricalAngle import Surface_cylindricalAngle
 from ..toroidalField import ToroidalField
 from ..toroidalField import derivatePol, derivateTor
-from ..toroidalField import changeResolution, fftToroidalField 
+from ..toroidalField import changeResolution, fftToroidalField
 from ..misc import print_progress
 from scipy.optimize import fixed_point
 from scipy.integrate import dblquad
@@ -85,12 +85,21 @@ class Surface_BoozerAngle(Surface):
         )
         return g_thetatheta, g_thetazeta, g_zetazeta
 
-    def getRZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray) -> Tuple[np.ndarray]: 
-        # if self.reverseToroidalAngle: 
-        #     zetaGrid = -zetaGrid
+    def getRZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray, normal: bool=False) -> Tuple[np.ndarray]: 
         rArr = self.r.getValue(thetaGrid, zetaGrid)
         zArr = self.z.getValue(thetaGrid, zetaGrid)
-        return rArr, zArr
+        if not normal:
+            return rArr, zArr
+        else:
+            r_theta = derivatePol(self.r)
+            r_zeta = derivateTor(self.r)
+            z_theta = derivatePol(self.z)
+            z_zeta = derivateTor(self.z)
+            r_thetaArr = r_theta.getValue(thetaGrid, zetaGrid)
+            r_zetaArr = r_zeta.getValue(thetaGrid, zetaGrid)
+            z_thetaArr = z_theta.getValue(thetaGrid, zetaGrid)
+            z_zetaArr = z_zeta.getValue(thetaGrid, zetaGrid)
+            return rArr, zArr, r_thetaArr, r_zetaArr, z_thetaArr, z_zetaArr
 
     def getXYZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray) -> Tuple[np.ndarray]: 
         rArr, zArr = self.getRZ(thetaGrid, zetaGrid)
@@ -121,16 +130,69 @@ class Surface_BoozerAngle(Surface):
             fixed_point(zetaValue, phi, args=(theta, phi), xtol=xtol)
         )
         
-    def getPhi(self, thetaArr: np.ndarray, zetaArr: np.ndarray) -> np.ndarray:
+    def getPhi(self, thetaArr: np.ndarray, zetaArr: np.ndarray, normal: bool=False) -> np.ndarray or Tuple[np.ndarray]:
         omegaArr = self.omega.getValue(thetaArr, zetaArr)
-        if self.reverseToroidalAngle and not self.reverseOmegaAngle:
-            return (-zetaArr + omegaArr)
-        elif self.reverseToroidalAngle and self.reverseOmegaAngle:
-            return (-zetaArr - omegaArr)
-        elif not self.reverseToroidalAngle and self.reverseOmegaAngle:
-            return (zetaArr - omegaArr)
+        if not normal:
+            if self.reverseToroidalAngle and not self.reverseOmegaAngle:
+                return (-zetaArr + omegaArr)
+            elif self.reverseToroidalAngle and self.reverseOmegaAngle:
+                return (-zetaArr - omegaArr)
+            elif not self.reverseToroidalAngle and self.reverseOmegaAngle:
+                return (zetaArr - omegaArr)
+            else:
+                return (zetaArr + omegaArr)
         else:
-            return (zetaArr + omegaArr)
+            omega_theta = derivatePol(self.omega)
+            omega_zeta = derivateTor(self.omega)
+            omega_thetaArr = omega_theta.getValue(thetaArr, zetaArr)
+            omega_zetaArr = omega_zeta.getValue(thetaArr, zetaArr)
+            if self.reverseToroidalAngle and not self.reverseOmegaAngle:
+                return (
+                    omegaArr - zetaArr,
+                    omega_thetaArr,
+                    omega_zetaArr - 1
+                )
+            elif self.reverseToroidalAngle and self.reverseOmegaAngle:
+                return (
+                    - omegaArr - zetaArr ,
+                    - omega_thetaArr,
+                    - omega_zetaArr - 1
+                )
+            elif not self.reverseToroidalAngle and self.reverseOmegaAngle:
+                return (
+                    - omegaArr + zetaArr,
+                    - omega_thetaArr,
+                    - omega_zetaArr + 1
+                )
+            else:
+                return (
+                    omegaArr + zetaArr,
+                    omega_thetaArr,
+                    omega_zetaArr + 1
+                )
+
+    def getAreaVolume(self, npol: int=256, ntor: int=256):
+        dtheta, dzeta = 2*np.pi/npol, 2*np.pi/self.nfp/ntor
+        _thetaarr = np.linspace(0, 2*np.pi, npol, endpoint=False)
+        _zetaarr = np.linspace(0, 2*np.pi/self.nfp, ntor, endpoint=False)
+        thetaArr, zetaArr = np.meshgrid(_thetaarr, _zetaarr)
+        rArr, zArr, r_thetaArr, r_zetaArr, z_thetaArr, z_zetaArr = self.getRZ(thetaArr, zetaArr, normal=True)
+        phiArr, phi_thetaArr, phi_zetaArr = self.getPhi(thetaArr, zetaArr, normal=True)
+        position = np.transpose(np.array([rArr, np.zeros_like(rArr), zArr]))
+        position_theta = np.transpose(np.array([r_thetaArr, rArr*phi_thetaArr, z_thetaArr]))
+        position_zeta = np.transpose(np.array([r_zetaArr, rArr*phi_zetaArr, z_zetaArr]))
+        normalvector = np.cross(position_theta, position_zeta)
+        area = np.sum(np.linalg.norm(normalvector, axis=-1)) * dtheta * dzeta * self.nfp
+        volume = np.abs(np.sum(position*normalvector)) * dtheta * dzeta * self.nfp / 3
+        return area, volume
+    
+    def getArea(self, npol: int=256, ntor: int=256):
+        area, _ = self.getAreaVolume(npol=npol, ntor=ntor)
+        return area
+    
+    def getVolume(self, npol: int=256, ntor: int=256):
+        _, volume = self.getAreaVolume(npol=npol, ntor=ntor)
+        return volume
 
     def toCylinder(self, method: str="DFT", **kwargs) -> Surface_cylindricalAngle:
         if method == "DFT":
