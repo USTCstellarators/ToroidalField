@@ -203,6 +203,12 @@ class Surface_BoozerAngle(Surface):
     def getVolume(self, npol: int=256, ntor: int=256):
         _, volume = self.getAreaVolume(npol=npol, ntor=ntor)
         return volume
+    
+    def getCrossArea(self, phi: float, npol: int=256) -> float:
+        thetaArr = np.linspace(0, 2*np.pi, npol, endpoint=False)
+        zetaArr = self.getZeta(thetaArr, np.ones_like(thetaArr)*phi)
+        rArr, zArr = self.getRZ(thetaArr, zetaArr)
+        return np.sum(rArr[0:-1] * np.diff(zArr))
 
     def toCylinder(self, method: str="DFT", **kwargs) -> Surface_cylindricalAngle:
         if method == "DFT":
