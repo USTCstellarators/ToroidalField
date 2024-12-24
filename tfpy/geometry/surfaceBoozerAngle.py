@@ -68,22 +68,30 @@ class Surface_BoozerAngle(Surface):
             dPhidZeta = derivateTor(self.omega)*(-1) - 1 
         else:
             dPhidZeta = derivateTor(self.omega)*(-1) + 1 
-        g_thetatheta = (
-            self.dRdTheta*self.dRdTheta + 
-            self.r*self.r*dPhidTheta*dPhidTheta +
-            self.dZdTheta*self.dZdTheta
-        )
-        g_thetazeta = (
-            self.dRdTheta*self.dRdZeta + 
-            self.r*self.r*dPhidTheta*dPhidZeta +
-            self.dZdTheta*self.dZdZeta
-        )
-        g_zetazeta = (
-            self.dRdZeta*self.dRdZeta + 
-            self.r*self.r*dPhidZeta*dPhidZeta +
-            self.dZdZeta*self.dZdZeta
-        )
+        self.position_theta = [self.dRdTheta, self.r*dPhidTheta, self.dZdTheta]
+        self.position_zeta = [self.dRdZeta, self.r*dPhidZeta, self.dZdZeta]
+        # g_thetatheta = (
+        #     self.dRdTheta*self.dRdTheta + 
+        #     self.r*self.r*dPhidTheta*dPhidTheta +
+        #     self.dZdTheta*self.dZdTheta
+        # )
+        # g_thetazeta = (
+        #     self.dRdTheta*self.dRdZeta + 
+        #     self.r*self.r*dPhidTheta*dPhidZeta +
+        #     self.dZdTheta*self.dZdZeta
+        # )
+        # g_zetazeta = (
+        #     self.dRdZeta*self.dRdZeta + 
+        #     self.r*self.r*dPhidZeta*dPhidZeta +
+        #     self.dZdZeta*self.dZdZeta
+        # )
+        g_thetatheta = self.position_theta[0]*self.position_theta[0] + self.position_theta[1]*self.position_theta[1] + self.position_theta[2]*self.position_theta[2]
+        g_thetazeta = self.position_theta[0]*self.position_zeta[0] + self.position_theta[1]*self.position_zeta[1] + self.position_theta[2]*self.position_zeta[2]
+        g_zetazeta = self.position_zeta[0]*self.position_zeta[0] + self.position_zeta[1]*self.position_zeta[1] + self.position_zeta[2]*self.position_zeta[2]
         return g_thetatheta, g_thetazeta, g_zetazeta
+    
+    def updateBasis(self):
+        _, _, _ = self.metric
 
     def getRZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray, normal: bool=False) -> Tuple[np.ndarray]: 
         rArr = self.r.getValue(thetaGrid, zetaGrid)
@@ -130,7 +138,7 @@ class Surface_BoozerAngle(Surface):
             fixed_point(zetaValue, phi, args=(theta, phi), xtol=xtol)
         )
         
-    def getPhi(self, thetaArr: np.ndarray, zetaArr: np.ndarray, normal: bool=False) -> np.ndarray or Tuple[np.ndarray]:
+    def getPhi(self, thetaArr: np.ndarray, zetaArr: np.ndarray, normal: bool=False):
         omegaArr = self.omega.getValue(thetaArr, zetaArr)
         if not normal:
             if self.reverseToroidalAngle and not self.reverseOmegaAngle:
@@ -176,11 +184,13 @@ class Surface_BoozerAngle(Surface):
         _thetaarr = np.linspace(0, 2*np.pi, npol, endpoint=False)
         _zetaarr = np.linspace(0, 2*np.pi/self.nfp, ntor, endpoint=False)
         thetaArr, zetaArr = np.meshgrid(_thetaarr, _zetaarr)
-        rArr, zArr, r_thetaArr, r_zetaArr, z_thetaArr, z_zetaArr = self.getRZ(thetaArr, zetaArr, normal=True)
-        phiArr, phi_thetaArr, phi_zetaArr = self.getPhi(thetaArr, zetaArr, normal=True)
+        rArr, zArr = self.getRZ(thetaArr, zetaArr)
         position = np.transpose(np.array([rArr, np.zeros_like(rArr), zArr]))
-        position_theta = np.transpose(np.array([r_thetaArr, rArr*phi_thetaArr, z_thetaArr]))
-        position_zeta = np.transpose(np.array([r_zetaArr, rArr*phi_zetaArr, z_zetaArr]))
+        self.updateBasis()
+        # position_theta = np.transpose(np.array([r_thetaArr, rArr*phi_thetaArr, z_thetaArr]))
+        # position_zeta = np.transpose(np.array([r_zetaArr, rArr*phi_zetaArr, z_zetaArr]))
+        position_theta = np.transpose(np.array([self.position_theta[_i].getValue(thetaArr, zetaArr) for _i in range(3)]))
+        position_zeta = np.transpose(np.array([self.position_zeta[_i].getValue(thetaArr, zetaArr) for _i in range(3)]))
         normalvector = np.cross(position_theta, position_zeta)
         area = np.sum(np.linalg.norm(normalvector, axis=-1)) * dtheta * dzeta * self.nfp
         volume = np.abs(np.sum(position*normalvector)) * dtheta * dzeta * self.nfp / 3
