@@ -70,28 +70,31 @@ class Surface_BoozerAngle(Surface):
             dPhidZeta = derivateTor(self.omega)*(-1) + 1 
         self.position_theta = [self.dRdTheta, self.r*dPhidTheta, self.dZdTheta]
         self.position_zeta = [self.dRdZeta, self.r*dPhidZeta, self.dZdZeta]
-        # g_thetatheta = (
-        #     self.dRdTheta*self.dRdTheta + 
-        #     self.r*self.r*dPhidTheta*dPhidTheta +
-        #     self.dZdTheta*self.dZdTheta
-        # )
-        # g_thetazeta = (
-        #     self.dRdTheta*self.dRdZeta + 
-        #     self.r*self.r*dPhidTheta*dPhidZeta +
-        #     self.dZdTheta*self.dZdZeta
-        # )
-        # g_zetazeta = (
-        #     self.dRdZeta*self.dRdZeta + 
-        #     self.r*self.r*dPhidZeta*dPhidZeta +
-        #     self.dZdZeta*self.dZdZeta
-        # )
-        g_thetatheta = self.position_theta[0]*self.position_theta[0] + self.position_theta[1]*self.position_theta[1] + self.position_theta[2]*self.position_theta[2]
-        g_thetazeta = self.position_theta[0]*self.position_zeta[0] + self.position_theta[1]*self.position_zeta[1] + self.position_theta[2]*self.position_zeta[2]
-        g_zetazeta = self.position_zeta[0]*self.position_zeta[0] + self.position_zeta[1]*self.position_zeta[1] + self.position_zeta[2]*self.position_zeta[2]
-        return g_thetatheta, g_thetazeta, g_zetazeta
+        self.g_thetatheta = self.position_theta[0]*self.position_theta[0] + self.position_theta[1]*self.position_theta[1] + self.position_theta[2]*self.position_theta[2]
+        self.g_thetazeta = self.position_theta[0]*self.position_zeta[0] + self.position_theta[1]*self.position_zeta[1] + self.position_theta[2]*self.position_zeta[2]
+        self.g_zetazeta = self.position_zeta[0]*self.position_zeta[0] + self.position_zeta[1]*self.position_zeta[1] + self.position_zeta[2]*self.position_zeta[2]
+        return self.g_thetatheta, self.g_thetazeta, self.g_zetazeta
     
     def updateBasis(self):
         _, _, _ = self.metric
+
+    def getIota(self) -> float:
+        if not hasattr(self, "g_thetatheta"):
+            self.updateBasis()
+        area, _ = self.getAreaVolume()
+        from scipy.optimize import minimize
+        thetaGrid, zetaGrid = np.meshgrid(np.linspace(0, 2*np.pi, 128), np.linspace(0, 2*np.pi/self.nfp, 128))
+        position_theta = np.transpose(np.array([self.position_theta[_i].getValue(thetaGrid, zetaGrid) for _i in range(3)]))
+        position_zeta = np.transpose(np.array([self.position_zeta[_i].getValue(thetaGrid, zetaGrid) for _i in range(3)]))
+        normalvector = np.cross(position_theta, position_zeta)
+        normalGrid = np.linalg.norm(normalvector, axis=-1)
+        def func(iota):
+            errfield = float(iota)*self.g_thetatheta + self.g_thetazeta
+            errGrid = np.power(errfield.getValue(thetaGrid, zetaGrid), 2)
+            return np.power(np.sum(errGrid*normalGrid), 0.5) / area
+        res = minimize(func, [-self.g_thetazeta.getRe(0,0)/self.g_zetazeta.getRe(0,0)])
+        print(res.message)
+        return res.x[0]
 
     def getRZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray, normal: bool=False) -> Tuple[np.ndarray]: 
         rArr = self.r.getValue(thetaGrid, zetaGrid)
@@ -204,11 +207,39 @@ class Surface_BoozerAngle(Surface):
         _, volume = self.getAreaVolume(npol=npol, ntor=ntor)
         return volume
     
-    def getCrossArea(self, phi: float, npol: int=256) -> float:
-        thetaArr = np.linspace(0, 2*np.pi, npol, endpoint=False)
-        zetaArr = self.getZeta(thetaArr, np.ones_like(thetaArr)*phi)
-        rArr, zArr = self.getRZ(thetaArr, zetaArr)
-        return np.sum(rArr[0:-1] * np.diff(zArr))
+    def getCrossArea(self, phi: np.ndarray, npol: int=256):
+        if not isinstance(phi, np.ndarray):
+            thetaArr = np.linspace(0, 2*np.pi, npol, endpoint=False)
+            zetaArr = self.getZeta(thetaArr, np.ones_like(thetaArr)*phi)
+            rArr, zArr = self.getRZ(thetaArr, zetaArr)
+            return np.sum(rArr[0:-1] * np.diff(zArr))
+        else:
+            thetaArr = np.linspace(0, 2*np.pi, npol, endpoint=False)
+            phiGrid, thetaGrid = np.meshgrid(phi, thetaArr)
+            zetaGrid = self.getZeta(thetaGrid, phiGrid)
+            rGrid, zGrid = self.getRZ(thetaGrid, zetaGrid)
+            return np.sum(rGrid[0:-1,:] * np.diff(zGrid, axis=0), axis=0).flatten()
+
+    def getResidual(self, iota: float, ntor: int=128, npol: int=128, normalize: bool=True):
+        r"""
+        Return the residual of the equation
+            $$ \iota g_{\theta\theta} + g_{\theta\zeta} = 0 $$
+        """
+        if not hasattr(self, "g_thetatheta"):
+            self.updateBasis()
+        thetaGrid, zetaGrid = np.meshgrid(np.linspace(0, 2*np.pi, npol), np.linspace(0, 2*np.pi, ntor))
+        dtheta, dzeta = 2*np.pi/npol, 2*np.pi/ntor
+        position_theta = np.transpose(np.array([self.position_theta[_i].getValue(thetaGrid, zetaGrid) for _i in range(3)]))
+        position_zeta = np.transpose(np.array([self.position_zeta[_i].getValue(thetaGrid, zetaGrid) for _i in range(3)]))
+        normalvector = np.cross(position_theta, position_zeta)
+        normalGrid = np.linalg.norm(normalvector, axis=-1)
+        residual = iota*self.g_thetatheta + self.g_thetazeta
+        residualGrid = residual.getValue(thetaGrid, zetaGrid)
+        if normalize:
+            return np.sum(np.abs(residualGrid*normalGrid)) / np.sum(np.abs(normalGrid))
+        else:
+            return np.sum(np.abs(residualGrid*normalGrid)) * dtheta * dzeta
+        
 
     def toCylinder(self, method: str="DFT", **kwargs) -> Surface_cylindricalAngle:
         if method == "DFT":
