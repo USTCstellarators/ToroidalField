@@ -6,5 +6,5 @@ python_sources = [
 
 py3.install_sources(
   python_sources,
-  subdir: 'tfpy/spec/specLaplaceField'
+  subdir: 'tfpy/spec/specVacuumField'
 )
