@@ -1,3 +1,4 @@
 from .surface import Surface 
 from .surfaceCylindricalAngle import Surface_cylindricalAngle
 from .surfaceBoozerAngle import Surface_BoozerAngle
+from .potentialBoozerAngle import singlePotential_BoozerSurf, doublePotential_BoozerSurf, potential_BoozerSurf

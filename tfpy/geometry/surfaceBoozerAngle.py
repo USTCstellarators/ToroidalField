@@ -57,19 +57,19 @@ class Surface_BoozerAngle(Surface):
 
     @property
     def metric(self): 
-        dPhidTheta = derivatePol(self.omega)
+        self.dPhidTheta = derivatePol(self.omega)
         if self.reverseOmegaAngle: 
-            dPhidTheta = dPhidTheta*(-1)
+            self.dPhidTheta = self.dPhidTheta*(-1)
         if not self.reverseOmegaAngle and self.reverseToroidalAngle:
-            dPhidZeta = derivateTor(self.omega) - 1 
+            self.dPhidZeta = derivateTor(self.omega) - 1 
         elif not self.reverseOmegaAngle and not self.reverseToroidalAngle: 
-            dPhidZeta = derivateTor(self.omega) + 1 
+            self.dPhidZeta = derivateTor(self.omega) + 1 
         if self.reverseOmegaAngle and self.reverseToroidalAngle:
-            dPhidZeta = derivateTor(self.omega)*(-1) - 1 
+            self.dPhidZeta = derivateTor(self.omega)*(-1) - 1 
         else:
-            dPhidZeta = derivateTor(self.omega)*(-1) + 1 
-        self.position_theta = [self.dRdTheta, self.r*dPhidTheta, self.dZdTheta]
-        self.position_zeta = [self.dRdZeta, self.r*dPhidZeta, self.dZdZeta]
+            self.dPhidZeta = derivateTor(self.omega)*(-1) + 1 
+        self.position_theta = [self.dRdTheta, self.r*self.dPhidTheta, self.dZdTheta]
+        self.position_zeta = [self.dRdZeta, self.r*self.dPhidZeta, self.dZdZeta]
         self.g_thetatheta = self.position_theta[0]*self.position_theta[0] + self.position_theta[1]*self.position_theta[1] + self.position_theta[2]*self.position_theta[2]
         self.g_thetazeta = self.position_theta[0]*self.position_zeta[0] + self.position_theta[1]*self.position_zeta[1] + self.position_theta[2]*self.position_zeta[2]
         self.g_zetazeta = self.position_zeta[0]*self.position_zeta[0] + self.position_zeta[1]*self.position_zeta[1] + self.position_zeta[2]*self.position_zeta[2]
@@ -201,7 +201,6 @@ class Surface_BoozerAngle(Surface):
             zetaGrid = self.getZeta(thetaGrid, phiGrid)
             rGrid, zGrid = self.getRZ(thetaGrid, zetaGrid)
             return np.sum(rGrid[0:-1,:] * np.diff(zGrid, axis=0), axis=0).flatten()
-
 
     def toCylinder(self, method: str="DFT", **kwargs) -> Surface_cylindricalAngle:
         if method == "DFT":
