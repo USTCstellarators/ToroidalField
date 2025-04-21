@@ -336,8 +336,8 @@ class ToroidalField:
                 imMat += convolve2d(self.reMatrix, other.imMatrix, mode='full')
             if self.imIndex and other.reIndex:
                 imMat += convolve2d(self.imMatrix, other.reMatrix, mode='full')
-            reIndex = (self.reIndex and other.reIndex) or (self.imIndex and self.imIndex)
-            imIndex = (self.reIndex and other.imIndex) or (self.reIndex and self.imIndex)
+            reIndex = (self.reIndex and other.reIndex) or (self.imIndex and other.imIndex)
+            imIndex = (self.reIndex and other.imIndex) or (self.imIndex and other.reIndex)
             return ToroidalField(
                 nfp = self.nfp, 
                 mpol = mpol, 
