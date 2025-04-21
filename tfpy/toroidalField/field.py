@@ -154,14 +154,6 @@ class ToroidalField:
         assert 0 <= m <= self.mpol and -self.ntor <= n <= self.ntor
         self.imArr[self.indexMap(m, n)] = value
         
-    def integrate(self, ntheta:int=128, nzeta:int=128, order:int=2) -> float:
-        thetaArr = np.linspace(0, 2*np.pi, ntheta)
-        zetaArr = np.linspace(0, 2*np.pi/self.nfp, nzeta)
-        thetaGrid, zetaGrid = np.meshgrid(thetaArr, zetaArr) 
-        valueGrid = self.getValue(thetaGrid, zetaGrid) 
-        _ans = np.mean(np.power(np.power(np.abs(valueGrid), order), 1/order))
-        return float(_ans)
-        
     # plotting ###############################################################
     def plot_plt(self, ntheta: int=128, nzeta: int=128, fig=None, ax=None, onePeriod: bool=True, fill: bool=True, **kwargs):
         if kwargs.get('cmap') is None:
