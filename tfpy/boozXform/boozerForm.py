@@ -93,6 +93,32 @@ class BoozerForm(Booz_xform):
             imIndex = not asym
         ) 
         return _bfield 
+    
+    def getJacobian(self, surfaceIndex: int=-1, asym: bool=True) -> ToroidalField:
+        """
+        returns: 
+            Jacobian
+        """
+        nfp = int(self.nfp)
+        mpol = int(self.mboz) - 1
+        ntor = int(self.nboz)
+        jmnc = self.gmnc_b[:, surfaceIndex].copy()
+        if not asym: 
+            jmns = self.gmns_b[:, surfaceIndex].copy()
+        else:
+            jmns = np.zeros_like(jmnc)
+        jmnc[1:-1] = jmnc[1:-1] / 2
+        jmns[1:-1] = jmns[1:-1] / 2
+        _jfield = ToroidalField(
+            nfp = nfp, 
+            mpol = mpol, 
+            ntor = ntor,
+            reArr = jmnc, 
+            imArr = -jmns, 
+            reIndex = True, 
+            imIndex = not asym
+        )
+        return _jfield
 
     def getIota(self, surfaceIndex: int=-1):
         return self.iota[surfaceIndex]
