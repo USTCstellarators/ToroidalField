@@ -21,7 +21,7 @@ def multiplicativeInverse(originalField: ToroidalField, method: str="dft") -> To
         sampleTheta, sampleZeta = np.arange(2*mpol+1)*deltaTheta, np.arange(2*ntor+1)*deltaZeta
         gridSampleZeta, gridSampleTheta = np.meshgrid(sampleZeta, sampleTheta)
         sampleValue = originalField.getValue(gridSampleTheta, -gridSampleZeta)
-        _field = fftToroidalField(sampleValue, nfp=nfp)
+        _field = fftToroidalField(1/sampleValue, nfp=nfp)
 
     # TODO
     elif method == "convolution":
