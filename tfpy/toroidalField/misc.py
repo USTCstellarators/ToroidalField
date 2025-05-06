@@ -37,6 +37,18 @@ def normalize(originalField: ToroidalField) -> ToroidalField:
         imArr = originalField.imArr / originalField.reArr[0]
     )
 
+def power(field: ToroidalField, index: float) -> ToroidalField:
+    mpol, ntor = field.mpol, field.ntor
+    nfp = field.nfp
+    deltaTheta = 2*np.pi / (2*mpol+1)
+    deltaZeta = 2*np.pi / nfp / (2*ntor+1) 
+    sampleTheta, sampleZeta = np.arange(2*mpol+1)*deltaTheta, np.arange(2*ntor+1)*deltaZeta
+    gridSampleZeta, gridSampleTheta = np.meshgrid(sampleZeta, sampleTheta)
+    sampleValue = field.getValue(gridSampleTheta, -gridSampleZeta)
+    from .sample import fftToroidalField
+    _field = fftToroidalField(np.power(sampleValue, index), nfp=nfp)
+    return _field
+
 
 if __name__ == "__main__": 
     pass
