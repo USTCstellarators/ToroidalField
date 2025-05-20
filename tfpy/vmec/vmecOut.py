@@ -46,12 +46,12 @@ class VMECOut():
             rbs = np.zeros_like(rbc) 
             zbc = np.zeros_like(zbs) 
             lamc = np.zeros_like(lams) 
-        rbc[1:-1] = rbc[1:-1] / 2 
-        zbs[1:-1] = zbs[1:-1] / 2 
-        rbs[1:-1] = rbs[1:-1] / 2 
-        zbc[1:-1] = zbc[1:-1] / 2 
-        lams[1:-1] = lams[1:-1] / 2
-        lamc[1:-1] = lamc[1:-1] / 2
+        rbc[1: ] = rbc[1: ] / 2 
+        zbs[1: ] = zbs[1: ] / 2 
+        rbs[1: ] = rbs[1: ] / 2 
+        zbc[1: ] = zbc[1: ] / 2 
+        lams[1: ] = lams[1: ] / 2
+        lamc[1: ] = lamc[1: ] / 2
         _rField = ToroidalField(
             nfp = self.nfp, 
             mpol = mpol, 
@@ -90,8 +90,8 @@ class VMECOut():
             gs = self.gmns[surfaceIndex, :].copy()
         else:
             gs = np.zeros_like(gc)
-        gc[1:-1] = gc[1:-1] / 2
-        gs[1:-1] = gs[1:-1] / 2
+        gc[1: ] = gc[1: ] / 2
+        gs[1: ] = gs[1: ] / 2
         _Jacobian = ToroidalField(
             nfp = self.nfp,
             mpol = mpol_nyq, 
@@ -118,10 +118,10 @@ class VMECOut():
         else:
             bSupUs = np.zeros_like(bSupUc)
             bSupVs = np.zeros_like(bSupVc)
-        bSupUc[1: -1] = bSupUc[1: -1] / 2
-        bSupVc[1: -1] = bSupVc[1: -1] / 2
-        bSupUs[1: -1] = bSupUs[1: -1] / 2
-        bSupVs[1: -1] = bSupVs[1: -1] / 2
+        bSupUc[1: ] = bSupUc[1: ] / 2
+        bSupVc[1: ] = bSupVc[1: ] / 2
+        bSupUs[1: ] = bSupUs[1: ] / 2
+        bSupVs[1: ] = bSupVs[1: ] / 2
         _bSupU = ToroidalField(
             nfp = self.nfp,
             mpol = mpol_nyq, 
@@ -160,12 +160,12 @@ class VMECOut():
             bSubUs = np.zeros_like(bSubUc)
             bSubVs = np.zeros_like(bSubVc)
             bSubSc = np.zeros_like(bSubSs)
-        bSubUc[1: -1] = bSubUc[1: -1] / 2 
-        bSubUs[1: -1] = bSubUs[1: -1] / 2  
-        bSubVc[1: -1] = bSubVc[1: -1] / 2 
-        bSubVs[1: -1] = bSubVs[1: -1] / 2 
-        bSubSc[1: -1] = bSubSc[1: -1] / 2 
-        bSubSs[1: -1] = bSubSs[1: -1] / 2 
+        bSubUc[1: ] = bSubUc[1: ] / 2 
+        bSubUs[1: ] = bSubUs[1: ] / 2  
+        bSubVc[1: ] = bSubVc[1: ] / 2 
+        bSubVs[1: ] = bSubVs[1: ] / 2 
+        bSubSc[1: ] = bSubSc[1: ] / 2 
+        bSubSs[1: ] = bSubSs[1: ] / 2 
         _bSubU = ToroidalField(
             nfp = self.nfp,
             mpol = mpol_nyq, 
@@ -207,8 +207,8 @@ class VMECOut():
             bs = self.bmns[surfaceIndex, :].copy()
         else:
             bs = np.zeros_like(bc)
-        bc[1:-1] = bc[1:-1] / 2
-        bs[1:-1] = bs[1:-1] / 2
+        bc[1: ] = bc[1: ] / 2
+        bs[1: ] = bs[1: ] / 2
         _bField = ToroidalField(
             nfp = self.nfp,
             mpol = mpol_nyq, 

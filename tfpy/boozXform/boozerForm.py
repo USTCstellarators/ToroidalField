@@ -28,10 +28,10 @@ class BoozerForm(Booz_xform):
         else: 
             rbs = np.zeros_like(rbc)
             zbc = np.zeros_like(zbs)
-        rbc[1:-1] = rbc[1:-1] / 2
-        rbs[1:-1] = rbs[1:-1] / 2
-        zbc[1:-1] = zbc[1:-1] / 2
-        zbs[1:-1] = zbs[1:-1] / 2
+        rbc[1: ] = rbc[1: ] / 2
+        rbs[1: ] = rbs[1: ] / 2
+        zbc[1: ] = zbc[1: ] / 2
+        zbs[1: ] = zbs[1: ] / 2
         _rfield = ToroidalField(
             nfp = nfp, 
             mpol = mpol, 
@@ -55,8 +55,8 @@ class BoozerForm(Booz_xform):
             nuc = self.numnc_b[:, surfaceIndex].copy()
         else: 
             nuc = np.zeros_like(nus)
-        nuc[1:-1] = nuc[1:-1] / 2
-        nus[1:-1] = nus[1:-1] / 2
+        nuc[1: ] = nuc[1: ] / 2
+        nus[1: ] = nus[1: ] / 2
         _omegafield = ToroidalField(
             nfp = nfp,
             mpol = mpol, 
@@ -81,8 +81,8 @@ class BoozerForm(Booz_xform):
             bmns = self.bmns_b[:, surfaceIndex].copy()
         else: 
             bmns = np.zeros_like(bmnc)
-        bmnc[1:-1] = bmnc[1:-1] / 2
-        bmns[1:-1] = bmns[1:-1] / 2
+        bmnc[1: ] = bmnc[1: ] / 2
+        bmns[1: ] = bmns[1: ] / 2
         _bfield = ToroidalField(
             nfp = nfp, 
             mpol = mpol, 
@@ -107,8 +107,8 @@ class BoozerForm(Booz_xform):
             jmns = self.gmns_b[:, surfaceIndex].copy()
         else:
             jmns = np.zeros_like(jmnc)
-        jmnc[1:-1] = jmnc[1:-1] / 2
-        jmns[1:-1] = jmns[1:-1] / 2
+        jmnc[1: ] = jmnc[1: ] / 2
+        jmns[1: ] = jmns[1: ] / 2
         _jfield = ToroidalField(
             nfp = nfp, 
             mpol = mpol, 
