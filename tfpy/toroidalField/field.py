@@ -6,6 +6,8 @@
 import numpy as np
 from scipy.signal import convolve2d 
 from typing import Tuple
+from .misc import resize_center_pad_zeros
+from ..config import tfParams
 
 
 class ToroidalField:
@@ -147,12 +149,12 @@ class ToroidalField:
     def setRe(self, m: int=0, n: int=0, value: float=0): 
         assert self.reIndex
         assert 0 <= m <= self.mpol and -self.ntor <= n <= self.ntor
-        self.reArr[self.indexMap(m, n)] = value 
+        self._reArr[self.indexMap(m, n)] = value 
 
     def setIm(self, m: int=0, n: int=0, value: float=0): 
         assert self.imIndex 
         assert 0 <= m <= self.mpol and -self.ntor <= n <= self.ntor
-        self.imArr[self.indexMap(m, n)] = value
+        self._imArr[self.indexMap(m, n)] = value
         
     # plotting ###############################################################
     def plot_plt(self, ntheta: int=128, nzeta: int=128, fig=None, ax=None, onePeriod: bool=True, fill: bool=True, **kwargs):
@@ -216,23 +218,17 @@ class ToroidalField:
             else:
                 _mpol = max(self.mpol, other.mpol) 
                 _ntor = max(self.ntor, other.ntor) 
-                _reArr = np.zeros((2*_ntor+1)*_mpol+_ntor+1) 
-                _imArr = np.zeros((2*_ntor+1)*_mpol+_ntor+1) 
+                reMatrix = resize_center_pad_zeros(self.reMatrix, 2*_mpol+1, 2*_ntor+1) + resize_center_pad_zeros(other.reMatrix, 2*_mpol+1, 2*_ntor+1)
+                imMatrix = resize_center_pad_zeros(self.imMatrix, 2*_mpol+1, 2*_ntor+1) + resize_center_pad_zeros(other.imMatrix, 2*_mpol+1, 2*_ntor+1)
                 _field = ToroidalField(
-                    nfp = self.nfp, 
+                    nfp = self.nfp,
                     mpol = _mpol, 
                     ntor = _ntor, 
-                    reArr = _reArr, 
-                    imArr = _imArr, 
+                    reArr = reMatrix.flatten()[(2*_ntor+1)*_mpol+_ntor :], 
+                    imArr = imMatrix.flatten()[(2*_ntor+1)*_mpol+_ntor :],
                     reIndex = self.reIndex or other.reIndex, 
                     imIndex = self.imIndex or other.imIndex
                 )
-                for index in range(_field.arrlen): 
-                    m, n = _field.indexReverseMap(index)
-                    if _field.reIndex: 
-                        _field.setRe(m, n, self.getRe(m,n)+other.getRe(m,n)) 
-                    if _field.imIndex: 
-                        _field.setIm(m, n, self.getIm(m,n)+other.getIm(m,n)) 
                 return _field
         else:
             _reArr = np.zeros_like(self.reArr) + self.reArr
@@ -277,23 +273,17 @@ class ToroidalField:
             else:
                 _mpol = max(self.mpol, other.mpol) 
                 _ntor = max(self.ntor, other.ntor) 
-                _reArr = np.zeros((2*_ntor+1)*_mpol+_ntor+1) 
-                _imArr = np.zeros((2*_ntor+1)*_mpol+_ntor+1) 
+                reMatrix = resize_center_pad_zeros(self.reMatrix, 2*_mpol+1, 2*_ntor+1) - resize_center_pad_zeros(other.reMatrix, 2*_mpol+1, 2*_ntor+1)
+                imMatrix = resize_center_pad_zeros(self.imMatrix, 2*_mpol+1, 2*_ntor+1) - resize_center_pad_zeros(other.imMatrix, 2*_mpol+1, 2*_ntor+1)
                 _field = ToroidalField(
-                    nfp = self.nfp, 
+                    nfp = self.nfp,
                     mpol = _mpol, 
                     ntor = _ntor, 
-                    reArr = _reArr, 
-                    imArr = _imArr, 
+                    reArr = reMatrix.flatten()[(2*_ntor+1)*_mpol+_ntor :], 
+                    imArr = imMatrix.flatten()[(2*_ntor+1)*_mpol+_ntor :],
                     reIndex = self.reIndex or other.reIndex, 
                     imIndex = self.imIndex or other.imIndex
                 )
-                for index in range(_field.arrlen): 
-                    m, n = _field.indexReverseMap(index)
-                    if _field.reIndex:
-                        _field.setRe(m, n, self.getRe(m,n)-other.getRe(m,n)) 
-                    if _field.imIndex:
-                        _field.setIm(m, n, self.getIm(m,n)-other.getIm(m,n)) 
                 return _field
         else:
             _reArr = np.zeros_like(self.reArr) + self.reArr
@@ -338,7 +328,21 @@ class ToroidalField:
                 imMat += convolve2d(self.imMatrix, other.reMatrix, mode='full')
             reIndex = (self.reIndex and other.reIndex) or (self.imIndex and other.imIndex)
             imIndex = (self.reIndex and other.imIndex) or (self.imIndex and other.reIndex)
-            return ToroidalField(
+            if mpol > tfParams.max_mpol or ntor > tfParams.max_ntor:
+                _mpol = tfParams.max_mpol if mpol>tfParams.max_mpol else mpol
+                _ntor = tfParams.max_ntor if ntor>tfParams.max_ntor else ntor
+                reMat= resize_center_pad_zeros(reMat, 2*_mpol+1, 2*_ntor+1)
+                imMat= resize_center_pad_zeros(imMat, 2*_mpol+1, 2*_ntor+1)
+                return  ToroidalField(
+                    nfp = self.nfp, 
+                    mpol = _mpol, 
+                    ntor = _ntor,
+                    reArr = reMat.flatten()[(2*_ntor+1)*_mpol+_ntor :],
+                    imArr = imMat.flatten()[(2*_ntor+1)*_mpol+_ntor :], 
+                    reIndex = reIndex, 
+                    imIndex = imIndex
+                )
+            return  ToroidalField(
                 nfp = self.nfp, 
                 mpol = mpol, 
                 ntor = ntor,

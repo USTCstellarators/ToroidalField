@@ -7,3 +7,5 @@ submodules = [
     'vmec',
     'vmec2spec'
 ]
+
+from .config import tfParams

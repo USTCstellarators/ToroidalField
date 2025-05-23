@@ -4,51 +4,41 @@
 
 
 import numpy as np 
-from .field import ToroidalField
 
 
-def changeResolution(originalField: ToroidalField, mpol: int, ntor: int) -> ToroidalField:
-    nums = (2*ntor+1)*mpol+ntor+1
-    _field = ToroidalField(
-        nfp = originalField.nfp, 
-        mpol = mpol, 
-        ntor = ntor, 
-        reArr = np.zeros(nums), 
-        imArr = np.zeros(nums), 
-        reIndex = originalField.reIndex, 
-        imIndex = originalField.imIndex
-    )
-    for i in range(nums):
-        m, n = _field.indexReverseMap(i)
-        if _field.reIndex:
-            _field.setRe(m, n, originalField.getRe(m, n))
-        if _field.imIndex:
-            _field.setIm(m, n, originalField.getIm(m, n))
-    return _field 
-
-
-def normalize(originalField: ToroidalField) -> ToroidalField:
-    assert originalField.reIndex
-    return ToroidalField(
-        nfp = originalField.nfp, 
-        mpol = originalField.mpol, 
-        ntor = originalField.ntor, 
-        reArr = originalField.reArr / originalField.reArr[0], 
-        imArr = originalField.imArr / originalField.reArr[0]
-    )
-
-def power(field: ToroidalField, index: float) -> ToroidalField:
-    mpol, ntor = field.mpol, field.ntor
-    nfp = field.nfp
-    deltaTheta = 2*np.pi / (2*mpol+1)
-    deltaZeta = 2*np.pi / nfp / (2*ntor+1) 
-    sampleTheta, sampleZeta = np.arange(2*mpol+1)*deltaTheta, np.arange(2*ntor+1)*deltaZeta
-    gridSampleZeta, gridSampleTheta = np.meshgrid(sampleZeta, sampleTheta)
-    sampleValue = field.getValue(gridSampleTheta, -gridSampleZeta)
-    from .sample import fftToroidalField
-    _field = fftToroidalField(np.power(sampleValue, index), nfp=nfp)
-    return _field
-
-
-if __name__ == "__main__": 
-    pass
+def resize_center_pad_zeros(arr: np.ndarray, p: int, q: int) -> np.ndarray:
+    """
+    Resizes an array with odd dimensions to p*q dimensions. Centers crop when shrinking 
+    and centers pad with zeros when expanding.
+    
+    Args:
+        arr (np.ndarray): Input array (m*n where m and n are odd numbers)
+        p (int): Target number of rows (must be odd)
+        q (int): Target number of columns (must be odd)
+    
+    Returns:
+        np.ndarray: Resized array of shape p*q
+    """
+    # Get original dimensions
+    m, n = arr.shape
+    # Row processing
+    if p <= m:
+        # Take center p rows by slicing
+        start_row = (m - p) // 2
+        adjusted_rows = arr[start_row:start_row + p, :]
+    else:
+        # Create zero-padded rows and place original array in center
+        adjusted_rows = np.zeros((p, n), dtype=arr.dtype)
+        start_row = (p - m) // 2
+        adjusted_rows[start_row:start_row + m, :] = arr
+    # Column processing
+    if q <= n:
+        # Take center q columns by slicing
+        start_col = (n - q) // 2
+        adjusted = adjusted_rows[:, start_col:start_col + q]
+    else:
+        # Create zero-padded columns and place intermediate array in center
+        adjusted = np.zeros((p, q), dtype=arr.dtype)
+        start_col = (q - n) // 2
+        adjusted[:, start_col:start_col + n] = adjusted_rows
+    return adjusted
