@@ -186,6 +186,10 @@ class ToroidalField:
             ctrig = ax.contour(zetaGrid, thetaGrid, valueGrid, **kwargs)
             colorbar = fig.colorbar(ctrig)
             colorbar.ax.tick_params(labelsize=18) 
+        try:
+            colorbar.ax.yaxis.get_offset_text().set_fontsize(15)
+        except:
+            pass
         if kwargs.get("toroidalLabel") == None:
             kwargs.update({"toroidalLabel": r"$\zeta$"})
         if kwargs.get("poloidalLabel") == None:
