@@ -202,13 +202,13 @@ class Surface_BoozerAngle(Surface):
             rGrid, zGrid = self.getRZ(thetaGrid, zetaGrid)
             return np.sum(rGrid[0:-1,:] * np.diff(zGrid, axis=0), axis=0).flatten()
 
-    def toCylinder(self, method: str="DFT", **kwargs) -> Surface_cylindricalAngle:
+    def toCylinder(self, method: str="integrate", **kwargs) -> Surface_cylindricalAngle:
         if method == "DFT":
             return self.toCylinder_dft(**kwargs)
         else:
-            return self.toCylinder_integrate()
+            return self.toCylinder_integrate(**kwargs)
 
-    def toCylinder_dft(self, mpol: int=None, ntor: int=None, xtol: float=1e-13) -> Surface_cylindricalAngle:
+    def toCylinder_dft(self, mpol: int=None, ntor: int=None, xtol: float=1e-15) -> Surface_cylindricalAngle:
         
         if mpol is None:
             mpol = self.mpol+self.omega.mpol+1
@@ -258,122 +258,54 @@ class Surface_BoozerAngle(Surface):
             reverseToroidalAngle = True
         )
 
-    # TODO: An untested function! 
-    def toCylinder_integrate(self) -> Surface_cylindricalAngle:
-
-        def substitutionFactor(theta, zeta) -> float:
-            return float(
-                derivateTor(self.omega).getValue(theta, zeta) - 1 
-            )
-        
-        def helicalAngle(theta, zeta, m, n, _m, _n):
-            return (
-                m*theta - n*self.nfp*zeta - _m*theta + _n*self.nfp*(-zeta+self.omega.getValue(theta, zeta))
-            )
-
-        def rRe(zeta, theta, m, n, _m, _n): 
-            factor = substitutionFactor(theta, zeta)
-            _angle = helicalAngle(theta, zeta, m, n, _m, _n)
-            return ((
-                self.r.getRe(m,n) * np.cos(_angle) - 
-                self.r.getIm(m,n) * np.sin(_angle)
-            )*factor).flatten() 
-
-        def rIm(zeta, theta, m, n, _m, _n): 
-            factor = substitutionFactor(theta, zeta)
-            _angle = helicalAngle(theta, zeta, m, n, _m, _n)
-            return ((
-                self.r.getRe(m,n) * np.sin(_angle) + 
-                self.r.getIm(m,n) * np.cos(_angle)
-            )*factor).flatten() 
-
-        def zRe(zeta, theta, m, n, _m, _n): 
-            factor = substitutionFactor(theta, zeta)
-            _angle = helicalAngle(theta, zeta, m, n, _m, _n)
-            return ((
-                self.z.getRe(m,n) * np.cos(_angle) - 
-                self.z.getIm(m,n) * np.sin(_angle)
-            )*factor).flatten() 
-
-        def zIm(zeta, theta, m, n, _m, _n): 
-            factor = substitutionFactor(theta, zeta)
-            _angle = helicalAngle(theta, zeta, m, n, _m, _n)
-            return ((
-                self.z.getRe(m,n) * np.sin(_angle) + 
-                self.z.getIm(m,n) * np.cos(_angle)
-            )*factor).flatten() 
-
-        print("Transformation from Boozer to Cylindrical Coordinates... ")
-
-        print("Compute the R component: ")
-        rReArr = np.zeros((2*self.ntor+1)*self.mpol+self.ntor+1)
-        rImArr = np.zeros((2*self.ntor+1)*self.mpol+self.ntor+1)
-        for index in range((2*self.ntor+1)*self.mpol+self.ntor+1): 
-            _m, _n = self.r.indexReverseMap(index)
-            for _i ,m in enumerate(range(-self.mpol, self.mpol+1)):
-                for _j, n in enumerate(range(-self.ntor, self.ntor+1)): 
-                    rReArr[index] += dblquad(
-                        rRe, 
-                        0, 2*np.pi, 
-                        0, 2*np.pi, 
-                        args = (m, n, _m, _n)
-                    )[0] * (1/4/np.pi/np.pi)
-                    rImArr[index] += dblquad(
-                        rIm, 
-                        0, 2*np.pi, 
-                        0, 2*np.pi, 
-                        args = (m, n, _m, _n)
-                    )[0] * (1/4/np.pi/np.pi)
-                    print_progress(
-                        index*((2*self.mpol+1)*(2*self.ntor+1)) + 
-                        _i * (2*self.ntor+1) + _j+1, 
-                        ((2*self.ntor+1)*self.mpol+self.ntor+1) * ((2*self.mpol+1)*(2*self.ntor+1))
-                    ) 
-
-        print("Compute the Z component: ")
-        zReArr = np.zeros((2*self.ntor+1)*self.mpol+self.ntor+1)
-        zImArr = np.zeros((2*self.ntor+1)*self.mpol+self.ntor+1)
-        for index in range((2*self.ntor+1)*self.mpol+self.ntor+1): 
-            _m, _n = self.r.indexReverseMap(index)
-            for _i ,m in enumerate(range(-self.mpol, self.mpol+1)):
-                for _j, n in enumerate(range(-self.ntor, self.ntor+1)): 
-                    zReArr[index] += dblquad(
-                        zRe, 
-                        0, 2*np.pi, 
-                        0, 2*np.pi, 
-                        args = (m, n, _m, _n)
-                    )[0] * (1/4/np.pi/np.pi)
-                    zImArr[index] += dblquad(
-                        zIm, 
-                        0, 2*np.pi, 
-                        0, 2*np.pi, 
-                        args = (m, n, _m, _n)
-                    )[0] * (1/4/np.pi/np.pi)
-                    print_progress(
-                        index*((2*self.mpol+1)*(2*self.ntor+1)) + 
-                        _i * (2*self.ntor+1) + _j+1, 
-                        ((2*self.ntor+1)*self.mpol+self.ntor+1) * ((2*self.mpol+1)*(2*self.ntor+1))
-                    )
-
+    def toCylinder_integrate(self, mpol: int=None, ntor: int=None, npol_integ: int=256, ntor_integ: int=256) -> Surface_cylindricalAngle:
+        if mpol is None:
+            mpol = self.mpol+self.omega.mpol+1
+        if ntor is None:
+            ntor = self.ntor+self.omega.ntor+1
+        m_range, n_range = np.arange(-mpol, mpol+1), np.arange(-ntor, ntor+1)
+        theta = np.linspace(0, 2*np.pi, npol_integ, endpoint=False)
+        zeta = np.linspace(0, 2*np.pi, ntor_integ, endpoint=False)
+        zetaGrid, thetaGrid = np.meshgrid(zeta, theta)
+        m = m_range.reshape(2*mpol+1, 1, 1, 1) 
+        n = n_range.reshape(1, 2*ntor+1, 1, 1) 
+        theta_grid = thetaGrid.reshape(1, 1, npol_integ, ntor_integ)
+        phi_grid = self.getPhi(thetaGrid, zetaGrid).reshape(1, 1, npol_integ, ntor_integ)
+        # zeta_grid = zeta.reshape(1, 1, 1, ntor_integ)
+        angle_matrix = m * theta_grid - n * self.nfp * phi_grid
+        cos_matrix = np.cos(angle_matrix)
+        sin_matrix = np.sin(angle_matrix)
+        rValue = self.r.getValue(thetaGrid, zetaGrid)
+        zValue = self.z.getValue(thetaGrid, zetaGrid)
+        try:
+            dphidzetaValue = self.dPhidZeta.getValue(thetaGrid, zetaGrid)
+        except AttributeError:
+            self.updateBasis()
+            dphidzetaValue = self.dPhidZeta.getValue(thetaGrid, zetaGrid)
+        rJacobianValue = rValue * dphidzetaValue
+        zJacobianValue = zValue * dphidzetaValue
+        rReMatrix = np.einsum('ij,klij->kl', rJacobianValue, cos_matrix) / npol_integ / ntor_integ
+        rImMatrix = - np.einsum('ij,klij->kl', rJacobianValue, sin_matrix) / npol_integ / ntor_integ
+        zReMatrix = np.einsum('ij,klij->kl', zJacobianValue, cos_matrix) / npol_integ / ntor_integ
+        zImMatrix = - np.einsum('ij,klij->kl', zJacobianValue, sin_matrix) / npol_integ / ntor_integ
         _rField = ToroidalField(
-            nfp = self.nfp, 
-            mpol = self.mpol, 
-            ntor = self.ntor,
-            reArr = rReArr,
-            imArr = rImArr
+            nfp=self.nfp, mpol=mpol, ntor=ntor,
+            reArr= rReMatrix.flatten()[(2*ntor+1)*mpol+ntor :],
+            imArr= rImMatrix.flatten()[(2*ntor+1)*mpol+ntor :],
+            reIndex=True, imIndex=True
         )
         _zField = ToroidalField(
-            nfp = self.nfp, 
-            mpol = self.mpol, 
-            ntor = self.ntor,
-            reArr = zReArr,
-            imArr = zImArr
+            nfp=self.nfp, mpol=mpol, ntor=ntor,
+            reArr= zReMatrix.flatten()[(2*ntor+1)*mpol+ntor :],
+            imArr= zImMatrix.flatten()[(2*ntor+1)*mpol+ntor :],
+            reIndex=True, imIndex=True
         )
         return Surface_cylindricalAngle(
             _rField, 
             _zField, 
             reverseToroidalAngle = False
         )
+ 
 
     def plot_plt(self, ntheta: int=360, nzeta: int=360, fig=None, ax=None, **kwargs):
         if ax is None: 
