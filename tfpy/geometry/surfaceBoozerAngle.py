@@ -255,7 +255,7 @@ class Surface_BoozerAngle(Surface):
         return Surface_cylindricalAngle(
             _fieldR, 
             _fieldZ, 
-            reverseToroidalAngle = True
+            reverseToroidalAngle = False
         )
 
     def toCylinder_integrate(self, mpol: int=None, ntor: int=None, npol_integ: int=256, ntor_integ: int=256) -> Surface_cylindricalAngle:
