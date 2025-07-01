@@ -26,7 +26,7 @@ class VMECOut():
     from ._plotProfile import plotProfile
 
     # transform functions
-    from ._vmecTransform import transBoozer
+    from ._vmecTransform import transBoozer, surf2Boozer
 
     def getSurface(self, surfaceIndex: int=-1, reverseToroidal: bool=True) -> Tuple:
         """

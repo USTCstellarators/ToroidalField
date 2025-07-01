@@ -5,6 +5,7 @@
 
 from ..toroidalField import ToroidalField
 from ..toroidalField import fftToroidalField
+from typing import Tuple
 
 
 def transBoozer(self, surfIndex: int, valueField: ToroidalField , mpol: int=None, ntor: int=None, **kwargs) -> ToroidalField:
@@ -68,6 +69,31 @@ def transBoozer(self, surfIndex: int, valueField: ToroidalField , mpol: int=None
         return ans
     else:
         print("Wrong type of the valuefield... ")
+
+
+def surf2Boozer(self, surfIndex: int=-1, mpol: int=None, ntor: int=None, reverseToroidalAngle: bool=False, reverseOmegaAngle:bool=True) :
+    ''' Transform the surface to Boozer coordinates.
+    Args:
+        surfIndex (int): The index of the surface to be transformed.
+        mpol (int): The poloidal mode number.
+        ntor (int): The toroidal mode number.
+    Returns:
+        surfBoozer (tfpy.geometry.Surf_BoozerAngle): The surface in Boozer coordinates.
+        B (tfpy.toroidalField.ToroidalField): The magnetic field in Boozer coordinates.
+    '''
+    from ..geometry import Surface_BoozerAngle
+    _surf, _lam = self.getSurface(surfIndex)
+    _omgea = self.getOmega(surfIndex)
+    _B = self.getB(surfIndex)
+    rzomegaB_v2boozer = self.transBoozer(surfIndex, [_surf.r, _surf.z, _omgea, _B], mpol=mpol, ntor=ntor, )
+    surfBoozer = Surface_BoozerAngle(
+        rzomegaB_v2boozer[0], 
+        rzomegaB_v2boozer[1], 
+        rzomegaB_v2boozer[2], 
+        reverseToroidalAngle=reverseToroidalAngle, reverseOmegaAngle=reverseOmegaAngle
+    )
+    return surfBoozer, rzomegaB_v2boozer[3]
+
 
 
 if __name__ == "__main__":
