@@ -127,6 +127,8 @@ class Surface_cylindricalAngle(Surface):
             f.write("!----- Boundary Parameters ----- \n") 
             for i in range((2*self.ntor+1)*self.mpol+self.ntor+1): 
                 m, n = self.r.indexReverseMap(i)
+                if not self.reverseToroidalAngle:
+                    n = -n
                 if m==0 and n==0:
                     f.write("   RBC("+str(n)+","+str(m)+")="+"{:.14e}".format(self.r.getRe(m,n)))
                     f.write("   ZBS("+str(n)+","+str(m)+")="+"{:.14e}".format(-self.z.getIm(m,n)))
