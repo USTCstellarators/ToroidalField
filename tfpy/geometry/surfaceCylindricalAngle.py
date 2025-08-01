@@ -105,9 +105,9 @@ class Surface_cylindricalAngle(Surface):
             f.write("   LFREEB = F \n") 
             f.write("!----- Grid Parameters ----- \n") 
             if params["lasym"]:
-                f.write("   LASYM = T \n") 
-            else:
                 f.write("   LASYM = F \n") 
+            else:
+                f.write("   LASYM = T \n") 
             f.write("   NFP = " + str(self.nfp) + " \n")
             f.write("   MPOL = " + str(self.mpol+1) + " \n")
             f.write("   NTOR = " + str(self.ntor) + " \n")
