@@ -305,7 +305,6 @@ class Surface_BoozerAngle(Surface):
             _zField, 
             reverseToroidalAngle = False
         )
- 
 
     def plot_plt(self, ntheta: int=360, nzeta: int=360, fig=None, ax=None, **kwargs):
         if ax is None: 
@@ -361,6 +360,7 @@ class Surface_BoozerAngle(Surface):
                 f["z"].create_dataset("re", data=self.z.reArr)
                 f["omega"].create_dataset("re", data=self.omega.reArr)
 
+# class method #####################################################################################################################################################
     @classmethod
     def readH5(cls, filename):
         with h5py.File(filename, 'r') as f:
@@ -412,6 +412,21 @@ class Surface_BoozerAngle(Surface):
                 reverseToroidalAngle=reverseToroidalAngle, 
                 reverseOmegaAngle=reverseOmegaAngle
             )
+
+    from qsc import Qsc
+    @classmethod
+    def fromQSC(cls, qsccase: Qsc, r: float, ntheta: int=21):
+        rgrid, zgrid, phigrid = qsccase.Frenet_to_cylindrical(r=r, ntheta=ntheta)
+        thetaarr = np.linspace(0, 2*np.pi, ntheta, endpoint=False)
+        zetaarr = np.linspace(0, 2*np.pi/qsccase.nfp, qsccase.nphi, endpoint=False)
+        zetagrid, thetagrid = np.meshgrid(zetaarr, thetaarr)
+        omegagrid = zetagrid - phigrid
+        return cls(
+            fftToroidalField(rgrid, nfp=qsccase.nfp),
+            fftToroidalField(zgrid, nfp=qsccase.nfp),
+            fftToroidalField(omegagrid, nfp=qsccase.nfp)
+        )
+
 
 if __name__ == "__main__":
     pass
