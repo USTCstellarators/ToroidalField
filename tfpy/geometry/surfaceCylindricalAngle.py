@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from .surface import Surface
 from ..toroidalField import ToroidalField 
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 
 class Surface_cylindricalAngle(Surface):
@@ -49,6 +49,23 @@ class Surface_cylindricalAngle(Surface):
         xArr = rArr * np.cos(zetaGrid)
         yArr = rArr * np.sin(zetaGrid)
         return xArr, yArr, zArr
+    
+    def plot_crosssection(self, phiarr: List, labelarr: List=None, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots()
+        for phiindex, phi in enumerate(phiarr):
+            try:
+                label = labelarr[phiindex]
+            except:
+                label = '_nolegend_'
+            phiarr = np.ones(100) * phi
+            thetaarr = np.linspace(0, 2*np.pi, 100)
+            rarr, zarr = self.getRZ(thetaarr, phiarr)
+            ax.plot(rarr, zarr, label=label)
+            ax.set_xlabel(r'$R$', fontsize=18)
+            ax.set_ylabel(r'$Z$', fontsize=18)
+            ax.tick_params(axis='both', which='both', labelsize=18)
+            ax.legend(fontsize=16)
 
     def plot_plt(self, ntheta: int=360, nzeta: int=360, fig=None, ax=None, **kwargs): 
         if ax is None: 

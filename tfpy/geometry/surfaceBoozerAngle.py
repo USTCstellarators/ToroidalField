@@ -14,7 +14,7 @@ from ..toroidalField import changeResolution, fftToroidalField
 from ..misc import print_progress
 from scipy.optimize import fixed_point
 from scipy.integrate import dblquad
-from typing import Tuple
+from typing import Tuple, List
 
 
 class Surface_BoozerAngle(Surface):
@@ -305,6 +305,25 @@ class Surface_BoozerAngle(Surface):
             _zField, 
             reverseToroidalAngle = False
         )
+
+    def plot_crosssection(self, phiarr: List, labelarr: List=None, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots()
+        for phiindex, phi in enumerate(phiarr):
+            try:
+                label = labelarr[phiindex]
+            except:
+                label = '_nolegend_'
+            phiarr = np.ones(100) * phi
+            thetaarr = np.linspace(0, 2*np.pi, 100)
+            zetaarr = self.getZeta(thetaarr, phiarr)
+            rarr, zarr = self.getRZ(thetaarr, zetaarr)
+            ax.plot(rarr, zarr, label=label)
+            ax.set_xlabel(r'$R$', fontsize=18)
+            ax.set_ylabel(r'$Z$', fontsize=18)
+            ax.tick_params(axis='both', which='both', labelsize=18)
+            ax.legend(fontsize=16)
+
 
     def plot_plt(self, ntheta: int=360, nzeta: int=360, fig=None, ax=None, **kwargs):
         if ax is None: 
