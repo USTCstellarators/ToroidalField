@@ -247,6 +247,12 @@ class Surface_cylindricalAngle(Surface):
             file.write("/\n")
             file.write("\n")
 
+    # class method #####################################################################################################################################################
+    from qsc import Qsc
+    @classmethod
+    def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10):
+        pass
+
 
 if __name__ == "__main__":
     pass

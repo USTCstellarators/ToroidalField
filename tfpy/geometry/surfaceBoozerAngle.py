@@ -415,17 +415,51 @@ class Surface_BoozerAngle(Surface):
 
     from qsc import Qsc
     @classmethod
-    def fromQSC(cls, qsccase: Qsc, r: float, ntheta: int=21):
-        rgrid, zgrid, phigrid = qsccase.Frenet_to_cylindrical(r=r, ntheta=ntheta)
-        thetaarr = np.linspace(0, 2*np.pi, ntheta, endpoint=False)
-        zetaarr = np.linspace(0, 2*np.pi/qsccase.nfp, qsccase.nphi, endpoint=False)
+    def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10):
+
+        thetaarr = np.linspace(0, 2*np.pi, 2*mpol+1, endpoint=False)
+        zetaarr = np.linspace(0, 2*np.pi/qsccase.nfp, 2*ntor+1, endpoint=False)
         zetagrid, thetagrid = np.meshgrid(zetaarr, thetaarr)
-        omegagrid = zetagrid - phigrid
+        from scipy.optimize import fixed_point
+        phi0grid = fixed_point(lambda phi: zetagrid-qsccase.nu_spline(phi), np.copy(zetagrid),  xtol=1e-15)
+
+        cosphi0, sinphi0 = np.cos(phi0grid), np.sin(phi0grid)
+        costheta, sintheta = np.cos(thetagrid), np.sin(thetagrid)
+
+        normal_r, normal_phi, normal_z = qsccase.normal_R_spline(phi0grid), qsccase.normal_phi_spline(phi0grid), qsccase.normal_z_spline(phi0grid)
+        normal_x = normal_r * cosphi0 - normal_phi * sinphi0
+        normal_y = normal_r * sinphi0 + normal_phi * sinphi0
+        binormal_r, binormal_phi, binormal_z = qsccase.binormal_R_spline(phi0grid), qsccase.binormal_phi_spline(phi0grid), qsccase.binormal_z_spline(phi0grid)
+        binormal_x = binormal_r * cosphi0 - binormal_phi * sinphi0
+        binormal_y = binormal_r * sinphi0 + binormal_phi * sinphi0
+
+        r0grid = qsccase.R0_func(phi0grid)
+        z0grid = qsccase.Z0_func(phi0grid)
+        qsccase.X1c_untwisted_spline = qsccase.convert_to_spline(qsccase.X1c_untwisted)
+        qsccase.X1s_untwisted_spline = qsccase.convert_to_spline(qsccase.X1s_untwisted)
+        qsccase.Y1c_untwisted_spline = qsccase.convert_to_spline(qsccase.Y1c_untwisted)
+        qsccase.Y1s_untwisted_spline = qsccase.convert_to_spline(qsccase.Y1s_untwisted)
+        X1grid = r * (qsccase.X1c_untwisted_spline(phi0grid) * costheta + qsccase.X1s_untwisted_spline(phi0grid) * sintheta)
+        Y1grid = r * (qsccase.Y1c_untwisted_spline(phi0grid) * costheta + qsccase.Y1s_untwisted_spline(phi0grid) * sintheta)
+        if qsccase.order != 'r1':
+            print('TODO')
+
+        xgrid = r0grid * cosphi0 + X1grid * normal_x + Y1grid * binormal_x
+        ygrid = r0grid * sinphi0 + X1grid * normal_y + Y1grid * binormal_y
+        zgrid =           z0grid + X1grid * normal_z + Y1grid * binormal_z
+        rgrid = np.sqrt(xgrid*xgrid + ygrid*ygrid)
+        phigrid = np.arctan2(ygrid, xgrid)
+        nugrid = zetagrid - phigrid
+
         return cls(
             fftToroidalField(rgrid, nfp=qsccase.nfp),
             fftToroidalField(zgrid, nfp=qsccase.nfp),
-            fftToroidalField(omegagrid, nfp=qsccase.nfp)
+            fftToroidalField(nugrid, nfp=qsccase.nfp),
+            reverseToroidalAngle = True, 
+            reverseOmegaAngle = False
         )
+
+
 
 
 if __name__ == "__main__":
