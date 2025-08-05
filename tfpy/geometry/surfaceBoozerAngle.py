@@ -436,7 +436,7 @@ class Surface_BoozerAngle(Surface):
     @classmethod
     def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10):
 
-        thetaarr = np.linspace(0, 2*np.pi, 2*mpol+1, endpoint=False)
+        thetaarr = np.linspace(0, -2*np.pi, 2*mpol+1, endpoint=False)
         zetaarr = np.linspace(0, 2*np.pi/qsccase.nfp, 2*ntor+1, endpoint=False)
         zetagrid, thetagrid = np.meshgrid(zetaarr, thetaarr)
         from scipy.optimize import fixed_point
@@ -447,10 +447,10 @@ class Surface_BoozerAngle(Surface):
 
         normal_r, normal_phi, normal_z = qsccase.normal_R_spline(phi0grid), qsccase.normal_phi_spline(phi0grid), qsccase.normal_z_spline(phi0grid)
         normal_x = normal_r * cosphi0 - normal_phi * sinphi0
-        normal_y = normal_r * sinphi0 + normal_phi * sinphi0
+        normal_y = normal_r * sinphi0 + normal_phi * cosphi0
         binormal_r, binormal_phi, binormal_z = qsccase.binormal_R_spline(phi0grid), qsccase.binormal_phi_spline(phi0grid), qsccase.binormal_z_spline(phi0grid)
         binormal_x = binormal_r * cosphi0 - binormal_phi * sinphi0
-        binormal_y = binormal_r * sinphi0 + binormal_phi * sinphi0
+        binormal_y = binormal_r * sinphi0 + binormal_phi * cosphi0
 
         r0grid = qsccase.R0_func(phi0grid)
         z0grid = qsccase.Z0_func(phi0grid)
@@ -471,11 +471,11 @@ class Surface_BoozerAngle(Surface):
         nugrid = zetagrid - phigrid
 
         return cls(
-            fftToroidalField(rgrid, nfp=qsccase.nfp),
-            fftToroidalField(zgrid, nfp=qsccase.nfp),
-            fftToroidalField(nugrid, nfp=qsccase.nfp),
-            reverseToroidalAngle = True, 
-            reverseOmegaAngle = False
+            fftToroidalField( rgrid,  nfp=qsccase.nfp),
+            fftToroidalField(-zgrid,  nfp=qsccase.nfp),
+            fftToroidalField(-nugrid, nfp=qsccase.nfp),
+            reverseToroidalAngle = False, 
+            reverseOmegaAngle = True
         )
 
 
