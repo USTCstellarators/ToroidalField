@@ -66,6 +66,8 @@ class Surface_cylindricalAngle(Surface):
             ax.set_ylabel(r'$Z$', fontsize=18)
             ax.tick_params(axis='both', which='both', labelsize=18)
             ax.legend(fontsize=16)
+            plt.axis("equal")
+        return fig
 
     def plot_plt(self, ntheta: int=360, nzeta: int=360, fig=None, ax=None, **kwargs): 
         if ax is None: 
