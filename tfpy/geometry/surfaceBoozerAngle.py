@@ -306,8 +306,8 @@ class Surface_BoozerAngle(Surface):
             reverseToroidalAngle = False
         )
 
-    def plot_crosssection(self, phiarr: List, labelarr: List=None, ax=None):
-        if ax is None:
+    def plot_crosssection(self, phiarr: List=[0], labelarr: List=None, ax=None, fig=None):
+        if ax is None and fig is None:
             fig, ax = plt.subplots()
         for phiindex, phi in enumerate(phiarr):
             try:
@@ -319,11 +319,12 @@ class Surface_BoozerAngle(Surface):
             zetaarr = self.getZeta(thetaarr, phiarr)
             rarr, zarr = self.getRZ(thetaarr, zetaarr)
             ax.plot(rarr, zarr, label=label)
-            ax.set_xlabel(r'$R$', fontsize=18)
-            ax.set_ylabel(r'$Z$', fontsize=18)
-            ax.tick_params(axis='both', which='both', labelsize=18)
+        ax.set_xlabel(r'$R$', fontsize=18)
+        ax.set_ylabel(r'$Z$', fontsize=18)
+        ax.tick_params(axis='both', which='both', labelsize=18)
+        if labelarr is not None:
             ax.legend(fontsize=16)
-            plt.axis("equal")
+        plt.axis("equal")
         return fig
 
 

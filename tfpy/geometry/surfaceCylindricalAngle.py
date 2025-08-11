@@ -50,8 +50,8 @@ class Surface_cylindricalAngle(Surface):
         yArr = rArr * np.sin(zetaGrid)
         return xArr, yArr, zArr
     
-    def plot_crosssection(self, phiarr: List, labelarr: List=None, ax=None):
-        if ax is None:
+    def plot_crosssection(self, phiarr: List=[0], labelarr: List=None, ax=None, fig=None):
+        if ax is None and fig is None:
             fig, ax = plt.subplots()
         for phiindex, phi in enumerate(phiarr):
             try:
@@ -62,11 +62,12 @@ class Surface_cylindricalAngle(Surface):
             thetaarr = np.linspace(0, 2*np.pi, 100)
             rarr, zarr = self.getRZ(thetaarr, phiarr)
             ax.plot(rarr, zarr, label=label)
-            ax.set_xlabel(r'$R$', fontsize=18)
-            ax.set_ylabel(r'$Z$', fontsize=18)
-            ax.tick_params(axis='both', which='both', labelsize=18)
+        ax.set_xlabel(r'$R$', fontsize=18)
+        ax.set_ylabel(r'$Z$', fontsize=18)
+        ax.tick_params(axis='both', which='both', labelsize=18)
+        if labelarr is not None:
             ax.legend(fontsize=16)
-            plt.axis("equal")
+        plt.axis("equal")
         return fig
 
     def plot_plt(self, ntheta: int=360, nzeta: int=360, fig=None, ax=None, **kwargs): 
