@@ -55,7 +55,6 @@ class Surface_BoozerAngle(Surface):
         self.z = changeResolution(self.z, mpol, ntor)
         self.omega = changeResolution(self.omega, mpol, ntor)
 
-    @property
     def metric(self): 
         self.dPhidTheta = derivatePol(self.omega)
         if self.reverseOmegaAngle: 
@@ -76,7 +75,7 @@ class Surface_BoozerAngle(Surface):
         return self.g_thetatheta, self.g_thetazeta, self.g_zetazeta
     
     def updateBasis(self):
-        _, _, _ = self.metric
+        _, _, _ = self.metric()
 
     def getRZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray, normal: bool=False) -> Tuple[np.ndarray]: 
         rArr = self.r.getValue(thetaGrid, zetaGrid)
@@ -172,8 +171,6 @@ class Surface_BoozerAngle(Surface):
         rArr, zArr = self.getRZ(thetaArr, zetaArr)
         position = np.transpose(np.array([rArr, np.zeros_like(rArr), zArr]))
         self.updateBasis()
-        # position_theta = np.transpose(np.array([r_thetaArr, rArr*phi_thetaArr, z_thetaArr]))
-        # position_zeta = np.transpose(np.array([r_zetaArr, rArr*phi_zetaArr, z_zetaArr]))
         position_theta = np.transpose(np.array([self.position_theta[_i].getValue(thetaArr, zetaArr) for _i in range(3)]))
         position_zeta = np.transpose(np.array([self.position_zeta[_i].getValue(thetaArr, zetaArr) for _i in range(3)]))
         normalvector = np.cross(position_theta, position_zeta)
@@ -188,6 +185,13 @@ class Surface_BoozerAngle(Surface):
     def getVolume(self, npol: int=256, ntor: int=256):
         _, volume = self.getAreaVolume(npol=npol, ntor=ntor)
         return volume
+    
+    def radius(self, npol: int=256, ntor: int=256):
+        """
+        Returns the major radius and minor radius of the toroidal surface.
+        """
+        arae, volume = self.getAreaVolume(npol=npol, ntor=ntor)
+        return arae*arae/8/np.pi/np.pi/volume, 2*volume/arae
     
     def getCrossArea(self, phi: np.ndarray, npol: int=256):
         if not isinstance(phi, np.ndarray):
@@ -316,7 +320,7 @@ class Surface_BoozerAngle(Surface):
                 label = '_nolegend_'
             phiarr = np.ones(100) * phi
             thetaarr = np.linspace(0, 2*np.pi, 100)
-            zetaarr = self.getZeta(thetaarr, phiarr)
+            zetaarr = self.getZeta(thetaarr, phiarr, xtol=1e-10)
             rarr, zarr = self.getRZ(thetaarr, zetaarr)
             ax.plot(rarr, zarr, label=label)
         ax.set_xlabel(r'$R$', fontsize=18)
@@ -437,13 +441,13 @@ class Surface_BoozerAngle(Surface):
 
     from qsc import Qsc
     @classmethod
-    def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10):
+    def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10, xtol: float=1e-15):
 
         thetaarr = np.linspace(0, -2*np.pi, 2*mpol+1, endpoint=False)
         zetaarr = np.linspace(0, 2*np.pi/qsccase.nfp, 2*ntor+1, endpoint=False)
         zetagrid, thetagrid = np.meshgrid(zetaarr, thetaarr)
         from scipy.optimize import fixed_point
-        phi0grid = fixed_point(lambda phi: zetagrid-qsccase.nu_spline(phi), np.copy(zetagrid),  xtol=1e-15)
+        phi0grid = fixed_point(lambda phi: zetagrid-qsccase.nu_spline(phi), np.copy(zetagrid),  xtol=xtol)
 
         cosphi0, sinphi0 = np.cos(phi0grid), np.sin(phi0grid)
         costheta, sintheta = np.cos(thetagrid), np.sin(thetagrid)

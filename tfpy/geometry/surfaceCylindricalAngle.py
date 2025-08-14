@@ -27,12 +27,19 @@ class Surface_cylindricalAngle(Surface):
         else: 
             self.r.imIndex, self.z.reIndex = True, True 
 
-    @property
     def metric(self):
-        g_thetatheta = self.dRdTheta*self.dRdTheta + self.dZdTheta*self.dZdTheta
-        g_thetazeta = self.dRdTheta*self.dRdZeta + self.dZdTheta*self.dZdZeta
-        g_zetazeta = self.dRdZeta*self.dRdZeta + self.r*self.r + self.dZdZeta*self.dZdZeta
-        return g_thetatheta, g_thetazeta, g_zetazeta 
+        self.position_theta = [self.dRdTheta, self.r*0, self.dZdTheta]
+        if self.reverseToroidalAngle:
+            self.position_zeta = [self.dRdZeta, self.r*(-1), self.dZdZeta]
+        else:
+            self.position_zeta = [self.dRdZeta, self.r, self.dZdZeta]
+        self.g_thetatheta = self.position_theta[0]*self.position_theta[0] + self.position_theta[1]*self.position_theta[1] + self.position_theta[2]*self.position_theta[2]
+        self.g_thetazeta = self.position_theta[0]*self.position_zeta[0] + self.position_theta[1]*self.position_zeta[1] + self.position_theta[2]*self.position_zeta[2]
+        self.g_zetazeta = self.position_zeta[0]*self.position_zeta[0] + self.position_zeta[1]*self.position_zeta[1] + self.position_zeta[2]*self.position_zeta[2]
+        return self.g_thetatheta, self.g_thetazeta, self.g_zetazeta
+
+    def  updateBasis(self):
+        _, _, _ = self.metric()
 
     def getRZ(self, thetaGrid: np.ndarray, zetaGrid: np.ndarray) -> Tuple[np.ndarray]: 
         if self.reverseToroidalAngle: 
@@ -49,6 +56,36 @@ class Surface_cylindricalAngle(Surface):
         xArr = rArr * np.cos(zetaGrid)
         yArr = rArr * np.sin(zetaGrid)
         return xArr, yArr, zArr
+    
+    def getAreaVolume(self, npol: int=256, ntor: int=256):
+        dtheta, dzeta = 2*np.pi/npol, 2*np.pi/self.nfp/ntor
+        _thetaarr = np.linspace(0, 2*np.pi, npol, endpoint=False)
+        _zetaarr = np.linspace(0, 2*np.pi/self.nfp, ntor, endpoint=False)
+        thetaArr, zetaArr = np.meshgrid(_thetaarr, _zetaarr)
+        rArr, zArr = self.getRZ(thetaArr, zetaArr)
+        position = np.transpose(np.array([rArr, np.zeros_like(rArr), zArr]))
+        self.updateBasis()
+        position_theta = np.transpose(np.array([self.position_theta[_i].getValue(thetaArr, zetaArr) for _i in range(3)]))
+        position_zeta = np.transpose(np.array([self.position_zeta[_i].getValue(thetaArr, zetaArr) for _i in range(3)]))
+        normalvector = np.cross(position_theta, position_zeta)
+        area = np.sum(np.linalg.norm(normalvector, axis=-1)) * dtheta * dzeta * self.nfp
+        volume = np.abs(np.sum(position*normalvector)) * dtheta * dzeta * self.nfp / 3
+        return area, volume
+    
+    def getArea(self, npol: int=256, ntor: int=256):
+        area, _ = self.getAreaVolume(npol=npol, ntor=ntor)
+        return area
+    
+    def getVolume(self, npol: int=256, ntor: int=256):
+        _, volume = self.getAreaVolume(npol=npol, ntor=ntor)
+        return volume
+    
+    def radius(self, npol: int=256, ntor: int=256):
+        """
+        Returns the major radius and minor radius of the toroidal surface.
+        """
+        arae, volume = self.getAreaVolume(npol=npol, ntor=ntor)
+        return arae*arae/8/np.pi/np.pi/volume, 2*volume/arae
     
     def plot_crosssection(self, phiarr: List=[0], labelarr: List=None, ax=None, fig=None):
         if ax is None and fig is None:
