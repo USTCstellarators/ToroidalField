@@ -87,7 +87,7 @@ class Surface_cylindricalAngle(Surface):
         arae, volume = self.getAreaVolume(npol=npol, ntor=ntor)
         return arae*arae/8/np.pi/np.pi/volume, 2*volume/arae
     
-    def plot_crosssection(self, phiarr: List=[0], labelarr: List=None, ax=None, fig=None):
+    def plot_crosssection(self, phiarr: List=[0], labelarr: List=None, ax=None, fig=None, **kwargs):
         if ax is None and fig is None:
             fig, ax = plt.subplots()
         for phiindex, phi in enumerate(phiarr):
@@ -98,7 +98,7 @@ class Surface_cylindricalAngle(Surface):
             phiarr = np.ones(100) * phi
             thetaarr = np.linspace(0, 2*np.pi, 100)
             rarr, zarr = self.getRZ(thetaarr, phiarr)
-            ax.plot(rarr, zarr, label=label)
+            ax.plot(rarr, zarr, label=label, **kwargs)
         ax.set_xlabel(r'$R$', fontsize=18)
         ax.set_ylabel(r'$Z$', fontsize=18)
         ax.tick_params(axis='both', which='both', labelsize=18)
