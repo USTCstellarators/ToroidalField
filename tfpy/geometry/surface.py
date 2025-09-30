@@ -14,7 +14,7 @@ class Surface:
         assert r.nfp == z.nfp
         assert r.mpol == z.mpol
         assert r.ntor == z.ntor
-        self._mpol, self._ntor = r.mpol, r.ntor
+        # self._mpol, self._ntor = r.mpol, r.ntor
         self.r = r
         self.z = z
 
@@ -24,11 +24,11 @@ class Surface:
 
     @property
     def mpol(self) -> int:
-        return self._mpol 
+        return self.r.mpol 
 
     @property
     def ntor(self) -> int: 
-        return self._ntor 
+        return self.r.ntor 
 
     @property
     def dRdTheta(self) -> ToroidalField:
