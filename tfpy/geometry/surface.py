@@ -14,7 +14,6 @@ class Surface:
         assert r.nfp == z.nfp
         assert r.mpol == z.mpol
         assert r.ntor == z.ntor
-        # self._mpol, self._ntor = r.mpol, r.ntor
         self.r = r
         self.z = z
 
@@ -47,7 +46,6 @@ class Surface:
         return derivateTor(self.z) 
 
     def changeResolution(self, mpol: int, ntor: int): 
-        self._mpol, self._ntor = mpol, ntor
         self.r = changeResolution(self.r, mpol, ntor)
         self.z = changeResolution(self.z, mpol, ntor)
 
