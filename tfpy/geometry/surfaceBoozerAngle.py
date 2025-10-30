@@ -476,6 +476,7 @@ class Surface_BoozerAngle(Surface):
         rgrid = np.sqrt(xgrid*xgrid + ygrid*ygrid)
         phigrid = np.arctan2(ygrid, xgrid)
         nugrid = zetagrid - phigrid
+        nugrid = (nugrid + np.pi) % (2*np.pi) - np.pi
 
         return cls(
             fftToroidalField( rgrid,  nfp=qsccase.nfp),
