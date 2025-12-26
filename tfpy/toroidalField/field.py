@@ -389,15 +389,17 @@ class ToroidalField:
         )
 
     def __eq__(self, other) -> bool:
-        try:
-            assert self.nfp == other.nfp
-            assert self.mpol == other.mpol
-            assert self.ntor == other.ntor
-            assert self.reArr.any() == other.reArr.any()
-            assert self.imArr.any() == other.imArr.any()
-            return True
-        except:
+        if not isinstance(other, ToroidalField):
             return False
+        return (
+            self.nfp == other.nfp
+            and self.mpol == other.mpol
+            and self.ntor == other.ntor
+            and np.array_equal(self.reArr, other.reArr)
+            and np.array_equal(self.imArr, other.imArr)
+            and self.reIndex == other.reIndex
+            and self.imIndex == other.imIndex
+        )
 
     @classmethod
     def constantField(cls, constant: int, nfp: int, mpol: int, ntor: int):
