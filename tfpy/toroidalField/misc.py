@@ -3,8 +3,10 @@
 # misc.py
 
 
-from numba import jit
-import numpy as np 
+import numpy as np
+from numba import jit 
+from functools import lru_cache
+from ..config import tfParams
 
 
 def resize_center_pad_zeros(arr: np.ndarray, p: int, q: int) -> np.ndarray:
@@ -45,9 +47,19 @@ def resize_center_pad_zeros(arr: np.ndarray, p: int, q: int) -> np.ndarray:
     return adjusted
 
 
+def numba_convolve2d(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+
+    if not tfParams.cache:
+        return numba_convolve2d_impl(mat, kernel)
+    else:
+        mat_tuple = tuple(tuple(row) for row in mat)
+        kernel_tuple = tuple(tuple(row) for row in kernel)
+        result_tuple = numba_convolve2d_cached(mat_tuple, kernel_tuple)
+        return np.array(result_tuple)
+
 
 @jit(nopython=True)
-def numba_convolve2d(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+def numba_convolve2d_impl(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 
     h_mat, w_mat = mat.shape
     h_kernel, w_kernel = kernel.shape
@@ -80,4 +92,12 @@ def numba_convolve2d(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
             output[y_out, x_out] = val
     
     return output
+
+
+@lru_cache(maxsize=int(tfParams.cache_size))
+def numba_convolve2d_cached(mat_tuple: tuple, kernel_tuple: tuple) -> tuple:
+    mat = np.array(mat_tuple, dtype=np.float64)
+    kernel = np.array(kernel_tuple, dtype=np.float64)
+    result = numba_convolve2d_impl(mat, kernel)
+    return tuple(tuple(row) for row in result)
 
