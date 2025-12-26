@@ -3,6 +3,7 @@
 # misc.py
 
 
+from numba import jit
 import numpy as np 
 
 
@@ -42,3 +43,41 @@ def resize_center_pad_zeros(arr: np.ndarray, p: int, q: int) -> np.ndarray:
         start_col = (q - n) // 2
         adjusted[:, start_col:start_col + n] = adjusted_rows
     return adjusted
+
+
+
+@jit(nopython=True)
+def numba_convolve2d(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+
+    h_mat, w_mat = mat.shape
+    h_kernel, w_kernel = kernel.shape
+    output_h = h_mat + h_kernel - 1
+    output_w = w_mat + w_kernel - 1
+    output = np.zeros((output_h, output_w))
+    
+    kernel_flipped = np.zeros_like(kernel)
+    for y in range(h_kernel):
+        for x in range(w_kernel):
+            kernel_flipped[y, x] = kernel[h_kernel - 1 - y, w_kernel - 1 - x]
+    
+    for y_out in range(output_h):
+        for x_out in range(output_w):
+            val = 0.0
+
+            y_mat_start = max(0, y_out - h_kernel + 1)
+            y_mat_end = min(h_mat, y_out + 1)
+            x_mat_start = max(0, x_out - w_kernel + 1)
+            x_mat_end = min(w_mat, x_out + 1)
+            
+            y_kernel_start = max(0, h_kernel - y_out - 1)
+            y_kernel_end = min(h_kernel, h_mat + h_kernel - y_out - 1)
+            x_kernel_start = max(0, w_kernel - x_out - 1)
+            x_kernel_end = min(w_kernel, w_mat + w_kernel - x_out - 1)
+            
+            sub_mat = mat[y_mat_start:y_mat_end, x_mat_start:x_mat_end]
+            sub_kernel = kernel_flipped[y_kernel_start:y_kernel_end, x_kernel_start:x_kernel_end]
+            val = np.sum(sub_mat * sub_kernel)
+            output[y_out, x_out] = val
+    
+    return output
+

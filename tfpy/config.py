@@ -7,7 +7,8 @@ class Config:
         # Default parameter values
         self._defaults = {
             'max_mpol': 20,
-            'max_ntor': 20
+            'max_ntor': 20,
+            'jit': False
         }
         # Current parameter values (initialized as deep copy of defaults)
         self._current = copy.deepcopy(self._defaults)

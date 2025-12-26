@@ -322,14 +322,25 @@ class ToroidalField:
             mpol, ntor = self.mpol+other.mpol, self.ntor+other.ntor 
             reMat = np.zeros((2*mpol+1, 2*ntor+1))
             imMat = np.zeros((2*mpol+1, 2*ntor+1))
-            if self.reIndex and other.reIndex:
-                reMat += convolve2d(self.reMatrix, other.reMatrix, mode='full')
-            if self.imIndex and other.imIndex:
-                reMat -= convolve2d(self.imMatrix, other.imMatrix, mode='full')
-            if self.reIndex and other.imIndex:
-                imMat += convolve2d(self.reMatrix, other.imMatrix, mode='full')
-            if self.imIndex and other.reIndex:
-                imMat += convolve2d(self.imMatrix, other.reMatrix, mode='full')
+            if tfParams.jit:
+                from .misc import numba_convolve2d
+                if self.reIndex and other.reIndex:
+                    reMat += numba_convolve2d(self.reMatrix, other.reMatrix)
+                if self.imIndex and other.imIndex:
+                    reMat -= numba_convolve2d(self.imMatrix, other.imMatrix)
+                if self.reIndex and other.imIndex:
+                    imMat += numba_convolve2d(self.reMatrix, other.imMatrix)
+                if self.imIndex and other.reIndex:
+                    imMat += numba_convolve2d(self.imMatrix, other.reMatrix)
+            else:
+                if self.reIndex and other.reIndex:
+                    reMat += convolve2d(self.reMatrix, other.reMatrix, mode='full')
+                if self.imIndex and other.imIndex:
+                    reMat -= convolve2d(self.imMatrix, other.imMatrix, mode='full')
+                if self.reIndex and other.imIndex:
+                    imMat += convolve2d(self.reMatrix, other.imMatrix, mode='full')
+                if self.imIndex and other.reIndex:
+                    imMat += convolve2d(self.imMatrix, other.reMatrix, mode='full')
             reIndex = (self.reIndex and other.reIndex) or (self.imIndex and other.imIndex)
             imIndex = (self.reIndex and other.imIndex) or (self.imIndex and other.reIndex)
             if mpol > tfParams.max_mpol or ntor > tfParams.max_ntor:
