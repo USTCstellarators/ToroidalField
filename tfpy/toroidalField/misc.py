@@ -94,7 +94,7 @@ def numba_convolve2d_impl(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     return output
 
 
-@lru_cache(maxsize=int(tfParams.cache_size))
+@lru_cache(maxsize=8192)
 def numba_convolve2d_cached(mat_tuple: tuple, kernel_tuple: tuple) -> tuple:
     mat = np.array(mat_tuple, dtype=np.float64)
     kernel = np.array(kernel_tuple, dtype=np.float64)
