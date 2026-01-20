@@ -191,16 +191,16 @@ class ToroidalField:
         except:
             pass
         if kwargs.get("toroidalLabel") == None:
-            kwargs.update({"toroidalLabel": r"$\zeta$"})
+            if onePeriod:
+                kwargs.update({"toroidalLabel": r"$N_\mathrm{fp}\zeta$"})
+            else:
+                kwargs.update({"toroidalLabel": r"$\zeta$"})
         if kwargs.get("poloidalLabel") == None:
             kwargs.update({"poloidalLabel": r"$\theta$"})
         ax.set_xlabel(kwargs.get("toroidalLabel"), fontsize=18)
         ax.set_ylabel(kwargs.get("poloidalLabel"), fontsize=18)
         ax.set_xticks(zetaValue)
-        if onePeriod and self.nfp!=1:
-            ax.set_xticklabels(["$0$", r"$\pi/"+str(self.nfp)+"$", r"$2\pi/"+str(self.nfp)+"$"], fontsize=18) 
-        else:
-            ax.set_xticklabels(["$0$", r"$\pi$", r"$2\pi$"], fontsize=18) 
+        ax.set_xticklabels(["$0$", r"$\pi$", r"$2\pi$"], fontsize=18) 
         ax.set_yticks(thetaValue)
         ax.set_yticklabels(["$0$", r"$\pi$", r"$2\pi$"], fontsize=18)
         return
