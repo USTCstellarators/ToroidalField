@@ -6,8 +6,8 @@ class Config:
     def __init__(self):
         # Default parameter values
         self._defaults = {
-            'max_mpol': 21,
-            'max_ntor': 21,
+            'max_mpol': 31,
+            'max_ntor': 31,
             'jit': True,
             'cache': True,
         }

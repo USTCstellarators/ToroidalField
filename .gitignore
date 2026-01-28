@@ -1,3 +1,5 @@
+*.github
+
 # VMEC Output
 jxbout*
 mercier*
