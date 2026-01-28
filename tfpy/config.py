@@ -6,10 +6,10 @@ class Config:
     def __init__(self):
         # Default parameter values
         self._defaults = {
-            'max_mpol': 20,
-            'max_ntor': 20,
-            'jit': False,
-            'cache': False,
+            'max_mpol': 21,
+            'max_ntor': 21,
+            'jit': True,
+            'cache': True,
         }
         # Current parameter values (initialized as deep copy of defaults)
         self._current = copy.deepcopy(self._defaults)

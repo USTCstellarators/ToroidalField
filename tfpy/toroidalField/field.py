@@ -35,6 +35,16 @@ class ToroidalField:
         assert reIndex or imIndex
         self.reIndex = reIndex
         self.imIndex = imIndex
+        # Precompute index grids for speed and reuse.
+        zero_block = np.zeros(self.ntor + 1, dtype=int)
+        if self.mpol:
+            m_block = np.repeat(np.arange(1, self.mpol + 1, dtype=int), 2 * self.ntor + 1)
+            n_block = np.tile(np.arange(-self.ntor, self.ntor + 1, dtype=int), self.mpol)
+            self._xm = np.concatenate((zero_block, m_block))
+            self._xn = np.concatenate((np.arange(0, self.ntor + 1, dtype=int), n_block))
+        else:
+            self._xm = zero_block
+            self._xn = np.arange(0, self.ntor + 1, dtype=int)
 
     @property
     def arrlen(self) -> int: 
@@ -74,15 +84,11 @@ class ToroidalField:
 
     @property
     def xm(self) -> np.ndarray:
-        return np.array([
-            self.indexReverseMap(i)[0] for i in range(self.mpol*(2*self.ntor+1)+self.ntor+1)
-        ])
+        return self._xm
 
     @property
     def xn(self) -> np.ndarray:
-        return np.array([
-            self.indexReverseMap(i)[1] for i in range(self.mpol*(2*self.ntor+1)+self.ntor+1)
-        ])
+        return self._xn
 
     def indexMap(self, m: int, n: int) -> int:
         assert abs(m) <= self.mpol and abs(n) <= self.ntor
