@@ -6,6 +6,7 @@
 import numpy as np
 from numba import jit 
 from functools import lru_cache
+from scipy.fft import next_fast_len
 from ..config import tfParams
 
 
@@ -49,6 +50,29 @@ def resize_center_pad_zeros(arr: np.ndarray, p: int, q: int) -> np.ndarray:
 
 def numba_convolve2d(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     return numba_convolve2d_impl(mat, kernel)
+
+
+@lru_cache(maxsize=1024)
+def _cached_kernel_fft(kernel_bytes: bytes, kernel_shape: tuple, dtype_str: str, fshape: tuple) -> np.ndarray:
+    kernel = np.frombuffer(kernel_bytes, dtype=np.dtype(dtype_str)).reshape(kernel_shape)
+    return np.fft.rfftn(kernel, fshape)
+
+
+def fft_convolve2d(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+    h_mat, w_mat = mat.shape
+    kernel = np.ascontiguousarray(kernel)
+    h_kernel, w_kernel = kernel.shape
+    output_h = h_mat + h_kernel - 1
+    output_w = w_mat + w_kernel - 1
+    fshape = (next_fast_len(output_h), next_fast_len(output_w))
+
+    f_mat = np.fft.rfftn(mat, fshape)
+    if tfParams.cache:
+        f_kernel = _cached_kernel_fft(kernel.tobytes(), kernel.shape, kernel.dtype.str, fshape)
+    else:
+        f_kernel = np.fft.rfftn(kernel, fshape)
+    out = np.fft.irfftn(f_mat * f_kernel, fshape)
+    return out[:output_h, :output_w]
 
 
 @jit(nopython=True, cache=True)

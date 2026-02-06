@@ -329,15 +329,32 @@ class ToroidalField:
             reMat = np.zeros((2*mpol+1, 2*ntor+1))
             imMat = np.zeros((2*mpol+1, 2*ntor+1))
             if tfParams.jit:
-                from .misc import numba_convolve2d
-                if self.reIndex and other.reIndex:
-                    reMat += numba_convolve2d(self.reMatrix, other.reMatrix)
-                if self.imIndex and other.imIndex:
-                    reMat -= numba_convolve2d(self.imMatrix, other.imMatrix)
-                if self.reIndex and other.imIndex:
-                    imMat += numba_convolve2d(self.reMatrix, other.imMatrix)
-                if self.imIndex and other.reIndex:
-                    imMat += numba_convolve2d(self.imMatrix, other.reMatrix)
+                use_fft = getattr(tfParams, "use_fft", False)
+                if use_fft:
+                    from .misc import fft_convolve2d
+                    if self.reIndex and other.reIndex:
+                        reMat += fft_convolve2d(self.reMatrix, other.reMatrix)
+                    if self.imIndex and other.imIndex:
+                        reMat -= fft_convolve2d(self.imMatrix, other.imMatrix)
+                    if self.reIndex and other.imIndex:
+                        imMat += fft_convolve2d(self.reMatrix, other.imMatrix)
+                    if self.imIndex and other.reIndex:
+                        imMat += fft_convolve2d(self.imMatrix, other.reMatrix)
+                    # Ensure expected full-convolution shape
+                    if reMat.shape != (2*mpol+1, 2*ntor+1):
+                        reMat = resize_center_pad_zeros(reMat, 2*mpol+1, 2*ntor+1)
+                    if imMat.shape != (2*mpol+1, 2*ntor+1):
+                        imMat = resize_center_pad_zeros(imMat, 2*mpol+1, 2*ntor+1)
+                else:
+                    from .misc import numba_convolve2d
+                    if self.reIndex and other.reIndex:
+                        reMat += numba_convolve2d(self.reMatrix, other.reMatrix)
+                    if self.imIndex and other.imIndex:
+                        reMat -= numba_convolve2d(self.imMatrix, other.imMatrix)
+                    if self.reIndex and other.imIndex:
+                        imMat += numba_convolve2d(self.reMatrix, other.imMatrix)
+                    if self.imIndex and other.reIndex:
+                        imMat += numba_convolve2d(self.imMatrix, other.reMatrix)
             else:
                 if self.reIndex and other.reIndex:
                     reMat += convolve2d(self.reMatrix, other.reMatrix, mode='full')

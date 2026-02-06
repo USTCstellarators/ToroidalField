@@ -10,6 +10,7 @@ class Config:
             'max_ntor': 31,
             'jit': True,
             'cache': True,
+            'use_fft': False,
         }
         # Current parameter values (initialized as deep copy of defaults)
         self._current = copy.deepcopy(self._defaults)
