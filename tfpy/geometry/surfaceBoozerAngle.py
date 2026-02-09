@@ -439,9 +439,16 @@ class Surface_BoozerAngle(Surface):
                 reverseOmegaAngle=reverseOmegaAngle
             )
 
-    from qsc import Qsc
+    # from qsc import Qsc
     @classmethod
-    def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10, xtol: float=1e-15):
+    def fromQSC(cls, qsccase, r: float, mpol: int=10, ntor: int=10, xtol: float=1e-15):
+        """
+        Arguments:
+            qsccase: a Qsc/Qic case from the qsc/qic package.
+            r: the minor radius of the surface to be generated.
+            mpol: the poloidal mode number of the Fourier expansion of the surface.
+            ntor: the toroidal mode number of the Fourier expansion of the surface.
+        """
 
         thetaarr = np.linspace(0, -2*np.pi, 2*mpol+1, endpoint=False)
         zetaarr = np.linspace(0, 2*np.pi/qsccase.nfp, 2*ntor+1, endpoint=False)

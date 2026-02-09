@@ -305,9 +305,16 @@ class Surface_cylindricalAngle(Surface):
             file.write("\n")
 
     # class method #####################################################################################################################################################
-    from qsc import Qsc
+    # from qsc import Qsc
     @classmethod
-    def fromQSC(cls, qsccase: Qsc, r: float, mpol: int=10, ntor: int=10):
+    def fromQSC(cls, qsccase, r: float, mpol: int=10, ntor: int=10):
+        """
+        Arguments:
+            qsccase: a Qsc/Qic case from the qsc/qic package.
+            r: the minor radius of the surface to be generated.
+            mpol: the poloidal mode number of the Fourier expansion of the surface.
+            ntor: the toroidal mode number of the Fourier expansion of the surface.
+        """
 
         if qsccase.order != 'r1':
             print('TODO')
