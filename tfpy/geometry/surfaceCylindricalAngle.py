@@ -194,6 +194,14 @@ class Surface_cylindricalAngle(Surface):
                     else:
                         f.write("   RBS("+str(n)+","+str(m)+")="+"{:.14e}".format(-self.r.getIm(m,n)))
                         f.write("   ZBC("+str(n)+","+str(m)+")="+"{:.14e}".format(self.z.getRe(m,n)) + " \n")
+                elif m==0 and n<0:      # for negative n, we need to use the complex conjugate of the positive n coefficients
+                    f.write("   RBC("+str(-n)+","+str(m)+")="+"{:.14e}".format(self.r.getRe(m,n)))
+                    f.write("   ZBS("+str(-n)+","+str(m)+")="+"{:.14e}".format(self.z.getIm(m,n)))
+                    if params["lasym"]:
+                        f.write(" \n") 
+                    else:
+                        f.write("   RBS("+str(-n)+","+str(m)+")="+"{:.14e}".format(self.r.getIm(m,n)))
+                        f.write("   ZBC("+str(-n)+","+str(m)+")="+"{:.14e}".format(self.z.getRe(m,n)) + " \n")
                 else:
                     f.write("   RBC("+str(n)+","+str(m)+")="+"{:.14e}".format(2*self.r.getRe(m,n)))
                     f.write("   ZBS("+str(n)+","+str(m)+")="+"{:.14e}".format(-2*self.z.getIm(m,n)))
