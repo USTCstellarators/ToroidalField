@@ -1,23 +1,20 @@
 [build-system]
-requires = [
-    "meson",
-    "meson-python",
-]
-build-backend = "mesonpy"
-
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "tfpy"
 version = "2.1.0"
 description = "A personal Python package for processing toroidal field"
 readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "GNU 3.0" }
 authors = [
-    {name="Ke Liu", email="lk2020@mail.ustc.edu.cn"},
+    { name = "Ke Liu", email = "lk2020@mail.ustc.edu.cn" },
 ]
 maintainers = [
-    {name="Ke Liu", email="lk2020@mail.ustc.edu.cn"},
+    { name = "Ke Liu", email = "lk2020@mail.ustc.edu.cn" },
 ]
-license = {text = "GNU 3.0"}
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
@@ -32,5 +29,12 @@ dependencies = [
     "py_spec",
     "booz_xform",
     "h5py",
-    "cmap"
+    "cmap",
 ]
+
+[project.urls]
+Homepage = "https://github.com/USTCstellarators/ToroidalField"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tfpy*"]
