@@ -13,10 +13,10 @@ from typing import Tuple
 class VMECOut():
     
     def __init__(self, fileName: str, ssym: bool=True) -> None:
-        _vmeclib = xarray.open_dataset(fileName)
-        self.keys = [key for key in _vmeclib.data_vars] 
-        for key in self.keys:
-            setattr(self, key, _vmeclib[key].values)
+        with xarray.open_dataset(fileName) as _vmeclib:
+            self.keys = [key for key in _vmeclib.data_vars]
+            for key in self.keys:
+                setattr(self, key, _vmeclib[key].values)
         self.ns = int(self.ns)
         self.nfp = int(self.nfp) 
         self.ssym = ssym
@@ -153,9 +153,9 @@ class VMECOut():
         bSubVc = self.bsubvmnc[surfaceIndex, :].copy()
         bSubSs = self.bsubsmns[surfaceIndex, :].copy()
         if not self.ssym:
-            bSubUs = self.bsupumns[surfaceIndex, :].copy()
-            bSubVs = self.bsupvmns[surfaceIndex, :].copy()
-            bSubSc = self.bsupsmnc[surfaceIndex, :].copy()
+            bSubUs = self.bsubumns[surfaceIndex, :].copy()
+            bSubVs = self.bsubvmns[surfaceIndex, :].copy()
+            bSubSc = self.bsubsmnc[surfaceIndex, :].copy()
         else:
             bSubUs = np.zeros_like(bSubUc)
             bSubVs = np.zeros_like(bSubVc)
@@ -253,7 +253,3 @@ class VMECOut():
                 _omega.setRe(m, n, -overG.getIm(m,n)/n/self.nfp)  
                 _omega.setIm(m, n, -overG.getRe(m,n)/n/self.nfp)
         return _omega * (-1/(iota*curI+curG))
-
-
-if __name__ == "__main__":
-    pass

@@ -25,14 +25,18 @@ class ToroidalField:
             mpol, ntor: the resolution in the poloidal/toroidal direction. 
             reArr, imArr: the real/imaginary part of the Fourier coefficients. 
         """
-        assert reArr.shape == imArr.shape
-        assert (2*ntor+1)*mpol+ntor+1 == reArr.size
+        if reArr.shape != imArr.shape:
+            raise ValueError("reArr and imArr must have the same shape")
+        expected_size = (2*ntor+1)*mpol+ntor+1
+        if reArr.size != expected_size:
+            raise ValueError(f"Fourier arrays must contain {expected_size} coefficients")
         self.nfp = nfp
         self.mpol = mpol
         self.ntor = ntor
         self._reArr = reArr
         self._imArr = imArr
-        assert reIndex or imIndex
+        if not (reIndex or imIndex):
+            raise ValueError("at least one of reIndex or imIndex must be True")
         self.reIndex = reIndex
         self.imIndex = imIndex
         # Precompute index grids for speed and reuse.
@@ -91,23 +95,24 @@ class ToroidalField:
         return self._xn
 
     def indexMap(self, m: int, n: int) -> int:
-        assert abs(m) <= self.mpol and abs(n) <= self.ntor
+        if abs(m) > self.mpol or abs(n) > self.ntor:
+            raise IndexError("Fourier mode is outside the field resolution")
         return self.ntor + (2*self.ntor+1)*(m-1) + (n+self.ntor+1)
 
     def indexReverseMap(self, index: int) -> Tuple[int]: 
-        assert index < (self.mpol*(2*self.ntor+1)+self.ntor+1)
+        if index < 0 or index >= self.arrlen:
+            raise IndexError("Fourier coefficient index is out of range")
         if index <= self.ntor:
             return 0, index
         else:
             return (index-self.ntor-1)//(2*self.ntor+1)+1, (index-self.ntor-1)%(2*self.ntor+1)-self.ntor
 
     def getValue(self, thetaArr: np.ndarray, zetaArr: np.ndarray) -> np.ndarray:
-        assert type(thetaArr) == type(zetaArr)
-        if not isinstance(thetaArr, np.ndarray):
-            try:
-                thetaArr, zetaArr = np.array(thetaArr), np.array(zetaArr)
-            except:
-                thetaArr, zetaArr = np.array([thetaArr]), np.array([zetaArr])
+        thetaArr, zetaArr = np.asarray(thetaArr), np.asarray(zetaArr)
+        try:
+            thetaArr, zetaArr = np.broadcast_arrays(thetaArr, zetaArr)
+        except ValueError as exc:
+            raise ValueError("thetaArr and zetaArr must be broadcastable") from exc
         angleMat = (
             np.dot(self.xm.reshape(-1,1), thetaArr.reshape(1,-1)) -  
             self.nfp * np.dot(self.xn.reshape(-1,1), zetaArr.reshape(1,-1))
@@ -120,7 +125,7 @@ class ToroidalField:
         try:
             m, n = thetaArr.shape
             return valueArr.reshape(m, n)
-        except:
+        except (AttributeError, TypeError, ValueError):
             if isinstance(valueArr, np.ndarray) and valueArr.shape[0] == 1: 
                 return valueArr.flatten()
             elif isinstance(valueArr, np.ndarray) and valueArr.shape[1] == 1: 
@@ -153,13 +158,17 @@ class ToroidalField:
             return self.imArr[self.indexMap(m, n)] 
 
     def setRe(self, m: int=0, n: int=0, value: float=0): 
-        assert self.reIndex
-        assert 0 <= m <= self.mpol and -self.ntor <= n <= self.ntor
+        if not self.reIndex:
+            raise ValueError("real coefficients are not enabled")
+        if not (0 <= m <= self.mpol and -self.ntor <= n <= self.ntor):
+            raise IndexError("Fourier mode is outside the field resolution")
         self._reArr[self.indexMap(m, n)] = value 
 
     def setIm(self, m: int=0, n: int=0, value: float=0): 
-        assert self.imIndex 
-        assert 0 <= m <= self.mpol and -self.ntor <= n <= self.ntor
+        if not self.imIndex:
+            raise ValueError("imaginary coefficients are not enabled")
+        if not (0 <= m <= self.mpol and -self.ntor <= n <= self.ntor):
+            raise IndexError("Fourier mode is outside the field resolution")
         self._imArr[self.indexMap(m, n)] = value
         
     # plotting ###############################################################
@@ -168,8 +177,8 @@ class ToroidalField:
             try:
                 from cmap import Colormap
                 kwargs.update({'cmap': Colormap('tol:sunset').to_matplotlib()})
-            except:
-                pass
+            except (ImportError, ValueError, TypeError):
+                kwargs.pop('cmap', None)
         import matplotlib.pyplot as plt 
         thetaArr = np.linspace(0, 2*np.pi, ntheta)
         thetaValue =  np.linspace(0, 2*np.pi, 3)
@@ -194,8 +203,8 @@ class ToroidalField:
             colorbar.ax.tick_params(labelsize=18) 
         try:
             colorbar.ax.yaxis.get_offset_text().set_fontsize(15)
-        except:
-            pass
+        except (AttributeError, TypeError):
+            colorbar = None
         if kwargs.get("toroidalLabel") == None:
             if onePeriod:
                 kwargs.update({"toroidalLabel": r"$N_\mathrm{fp}\zeta$"})
@@ -214,7 +223,8 @@ class ToroidalField:
     # operator overloading ####################################################
     def __add__(self, other):
         if isinstance(other, ToroidalField):
-            assert self.nfp == other.nfp
+            if self.nfp != other.nfp:
+                raise ValueError("fields must have the same nfp")
             if self.mpol==other.mpol and self.ntor==other.ntor: 
                 return ToroidalField(
                     nfp = self.nfp, 
@@ -269,7 +279,8 @@ class ToroidalField:
 
     def __sub__(self, other):
         if isinstance(other, ToroidalField):
-            assert self.nfp == other.nfp
+            if self.nfp != other.nfp:
+                raise ValueError("fields must have the same nfp")
             if self.mpol==other.mpol and self.ntor==other.ntor: 
                 return ToroidalField(
                     nfp = self.nfp, 
@@ -324,7 +335,8 @@ class ToroidalField:
 
     def __mul__(self, other):
         if isinstance(other, ToroidalField):
-            assert self.nfp == other.nfp
+            if self.nfp != other.nfp:
+                raise ValueError("fields must have the same nfp")
             mpol, ntor = self.mpol+other.mpol, self.ntor+other.ntor 
             reMat = np.zeros((2*mpol+1, 2*ntor+1))
             imMat = np.zeros((2*mpol+1, 2*ntor+1))
@@ -434,8 +446,3 @@ class ToroidalField:
             nfp, mpol, ntor, reArr, imArr, reIndex, imIndex
         )
         return field
-
-
-
-if __name__ == "__main__": 
-    pass

@@ -286,7 +286,3 @@ def writeSPECInput(SPEC_input: str, datas: Dict, interfaceShape: bool) -> None:
     file.close()
 
     return
-
-
-if __name__ == "__main__":
-    pass

@@ -26,8 +26,3 @@ def fftToroidalField(sampleValue: np.ndarray, nfp: int=1) -> ToroidalField:
         nfp=nfp, mpol=mpol, ntor=ntor,
         reArr=freal[nlen*mpol+ntor :], imArr=fimag[nlen*mpol+ntor :]
     )
-
-
-
-if __name__ == "__main__":
-    pass

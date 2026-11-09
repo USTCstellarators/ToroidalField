@@ -12,14 +12,9 @@ class SPECVacuumField:
     
     def __init__(self, file: str) -> None:
         self.data = SPECOut(file)
-        assert self.data.input.physics.nvol == 1 
-        self.nfp = self.data.input.physics.nvol
+        if self.data.input.physics.nvol != 1:
+            raise ValueError("SPECVacuumField requires a single-volume SPEC result")
+        self.nfp = self.data.input.physics.nfp
     
-    # TODO
     def getBoozerSurfaces(self, tflux: List[float]) -> List[Surface_BoozerAngle]:
-        pass
-        
-
-
-if __name__ == "__main__": 
-    pass
+        raise NotImplementedError("Boozer surface extraction from SPEC vacuum data is not implemented")

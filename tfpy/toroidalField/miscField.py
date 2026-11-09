@@ -24,7 +24,8 @@ def changeResolution(originalField: ToroidalField, mpol: int, ntor: int) -> Toro
     return _field 
 
 def normalize(originalField: ToroidalField) -> ToroidalField:
-    assert originalField.reIndex
+    if not originalField.reIndex:
+        raise ValueError("normalize requires real coefficients")
     return ToroidalField(
         nfp = originalField.nfp, 
         mpol = originalField.mpol, 
@@ -44,7 +45,3 @@ def power(field: ToroidalField, index: float) -> ToroidalField:
     from .sample import fftToroidalField
     _field = fftToroidalField(np.power(sampleValue, index), nfp=nfp)
     return _field
-
-
-if __name__ == "__main__": 
-    pass

@@ -25,4 +25,3 @@ def getInterface(self) -> List[FourSurf]:
             zbcList[i].append(data["Zbc"][i])
     surface = [FourSurf(xm=xm, xn=xn, rbc=rbcList[i], zbs=zbsList[i], rbs=rbsList[i], zbc=zbcList[i]) for i in range(self._Nvol)]
     return surface
-    

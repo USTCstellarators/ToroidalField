@@ -11,9 +11,8 @@ from ..toroidalField import changeResolution
 class Surface:
 
     def __init__(self, r: ToroidalField, z: ToroidalField) -> None:
-        assert r.nfp == z.nfp
-        assert r.mpol == z.mpol
-        assert r.ntor == z.ntor
+        if (r.nfp, r.mpol, r.ntor) != (z.nfp, z.mpol, z.ntor):
+            raise ValueError("r and z fields must have matching resolutions and nfp")
         self.r = r
         self.z = z
 
@@ -48,7 +47,3 @@ class Surface:
     def changeResolution(self, mpol: int, ntor: int): 
         self.r = changeResolution(self.r, mpol, ntor)
         self.z = changeResolution(self.z, mpol, ntor)
-
-
-if __name__ == "__main__":
-    pass

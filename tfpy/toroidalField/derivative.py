@@ -34,7 +34,3 @@ def derivateTor(field: ToroidalField) -> ToroidalField:
         reIndex = field.imIndex, 
         imIndex = field.reIndex
     )
-
-
-if __name__ == "__main__":
-    pass

@@ -316,7 +316,7 @@ class Surface_BoozerAngle(Surface):
         for phiindex, phi in enumerate(phiarr):
             try:
                 label = labelarr[phiindex]
-            except:
+            except (IndexError, TypeError):
                 label = '_nolegend_'
             phiarr = np.ones(100) * phi
             thetaarr = np.linspace(0, 2*np.pi, 100)
@@ -475,7 +475,7 @@ class Surface_BoozerAngle(Surface):
         X1grid = r * (qsccase.X1c_untwisted_spline(phi0grid) * costheta + qsccase.X1s_untwisted_spline(phi0grid) * sintheta)
         Y1grid = r * (qsccase.Y1c_untwisted_spline(phi0grid) * costheta + qsccase.Y1s_untwisted_spline(phi0grid) * sintheta)
         if qsccase.order != 'r1':
-            print('TODO')
+            raise NotImplementedError("QSC surfaces are currently supported only for order='r1'")
 
         xgrid = r0grid * cosphi0 + X1grid * normal_x + Y1grid * binormal_x
         ygrid = r0grid * sinphi0 + X1grid * normal_y + Y1grid * binormal_y
@@ -492,9 +492,3 @@ class Surface_BoozerAngle(Surface):
             reverseToroidalAngle = False, 
             reverseOmegaAngle = True
         )
-
-
-
-
-if __name__ == "__main__":
-    pass

@@ -64,4 +64,4 @@ def plot_kam_surface(self, ns=[], ntheta=1000, zeta=0.0, ax=None, **kwargs):
             _r, _z = _surf.rz(_theta, np.ones_like(_theta) * zeta)
             plt.scatter(_theta, _r, **kwargs)
             surfs.append(_surf)
-        return 
+        return

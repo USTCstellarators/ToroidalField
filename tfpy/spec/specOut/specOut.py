@@ -21,7 +21,3 @@ class SPECOut(py_spec.SPECout):
     from ._plot_poincare import plot_poincare
 
     from .mapping import cylinder2spec
-
-
-if __name__ == "__main__":
-    pass

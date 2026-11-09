@@ -51,7 +51,7 @@ def transBoozer(self, surfIndex: int, valueField: ToroidalField , mpol: int=None
                 varthetaphi = fixed_point(
                     varthetaphiValue, [gridSampleTheta[i,j],gridSampleZeta[i,j]], args=(gridSampleTheta[i,j],gridSampleZeta[i,j]), **kwargs
                 )
-            except:
+            except (RuntimeError, ValueError):
                 varthetaphi = fixed_point(
                     varthetaphiValue, [gridSampleTheta[i,j],gridSampleZeta[i,j]], args=(gridSampleTheta[i,j],gridSampleZeta[i,j]), method="iteration",**kwargs
                 )
@@ -93,8 +93,3 @@ def surf2Boozer(self, surfIndex: int=-1, mpol: int=None, ntor: int=None, reverse
         reverseToroidalAngle=reverseToroidalAngle, reverseOmegaAngle=reverseOmegaAngle
     )
     return surfBoozer, rzomegaB_v2boozer[3]
-
-
-
-if __name__ == "__main__":
-    pass

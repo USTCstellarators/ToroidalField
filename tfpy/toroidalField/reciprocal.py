@@ -23,14 +23,14 @@ def multiplicativeInverse(originalField: ToroidalField, method: str="dft") -> To
         sampleValue = originalField.getValue(gridSampleTheta, -gridSampleZeta)
         _field = fftToroidalField(1/sampleValue, nfp=nfp)
 
-    # TODO
     elif method == "convolution":
         """
         This method can not be trusted. 
         """
 
         def indexMap(index: int) -> Tuple:
-            assert 1 <= index <= 2*ntor+2*mpol*(2*ntor+1)
+            if not 1 <= index <= 2*ntor+2*mpol*(2*ntor+1):
+                raise IndexError("coefficient index is out of range")
             if index <= ntor+mpol*(2*ntor+1):
                 if 1 <= index <= ntor:
                     m = 0
@@ -116,8 +116,6 @@ def multiplicativeInverse(originalField: ToroidalField, method: str="dft") -> To
             elif label == "im":
                 _field.setIm(m, n, vectorComp[i+1])
         
+    else:
+        raise ValueError("method must be 'dft' or 'convolution'")
     return _field
-
-
-if __name__ == "__main__": 
-    pass

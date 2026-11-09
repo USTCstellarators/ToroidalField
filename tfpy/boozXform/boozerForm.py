@@ -123,7 +123,3 @@ class BoozerForm(Booz_xform):
 
     def getIota(self, surfaceIndex: int=-1):
         return self.iota[surfaceIndex]
-
-
-if __name__ == "__main__": 
-    pass

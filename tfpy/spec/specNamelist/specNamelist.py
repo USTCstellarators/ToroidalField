@@ -15,7 +15,3 @@ class SPECNamelist(py_spec.SPECNamelist):
         super().__init__(*args, **kwargs)
 
     from ._getInterface import getInterface
-
-
-if __name__ == "__main__":
-    pass

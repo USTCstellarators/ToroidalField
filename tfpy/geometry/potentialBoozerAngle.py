@@ -28,7 +28,8 @@ def singlePotential_BoozerSurf(x: np.ndarray, y: np.ndarray, z: np.ndarray,
                 \S(\mathbf{x}) = \int_\partial\Omega \frac{\sigma(\mathbf{y})}{|\mathbf{x}-\mathbf{y}|} d\omega(\mathbf{y})
             $$
     """
-    assert x.shape == y.shape == z.shape
+    if x.shape != y.shape or x.shape != z.shape:
+        raise ValueError("x, y, and z must have matching shapes")
     dtheta, dzeta = 2*np.pi/npol, 2*np.pi/surf.nfp/ntor
     _thetaarr = np.linspace(0, 2*np.pi, npol, endpoint=False) + dtheta/10
     _zetaarr = np.linspace(0, 2*np.pi, surf.nfp*ntor, endpoint=False) + dzeta/10
@@ -77,7 +78,8 @@ def doublePotential_BoozerSurf(x: np.ndarray, y: np.ndarray, z: np.ndarray,
                 \D(\mathbf{x}) = \int_\partial\Omega \frac{\mu(\mathbf{y})(\mathbf{x}-\mathbf{y})}{|\mathbf{x}-\mathbf{y}|^3}\cdot(\partial_\theta\times\partial_zeta)d\omega(\mathbf{y})
             $$
     """
-    assert x.shape == y.shape == z.shape
+    if x.shape != y.shape or x.shape != z.shape:
+        raise ValueError("x, y, and z must have matching shapes")
     dtheta, dzeta = 2*np.pi/npol, 2*np.pi/surf.nfp/ntor
     _thetaarr = np.linspace(0, 2*np.pi, npol, endpoint=False) + dtheta/10
     _zetaarr = np.linspace(0, 2*np.pi, surf.nfp*ntor, endpoint=False) + dzeta/10
@@ -140,7 +142,8 @@ def potential_BoozerSurf(x: np.ndarray, y: np.ndarray, z: np.ndarray,
                 \D(\mathbf{x}) = \int_\partial\Omega \frac{\mu(\mathbf{y})(\mathbf{x}-\mathbf{y})}{|\mathbf{x}-\mathbf{y}|^3}\cdot(\partial_\theta\times\partial_zeta)d\omega(\mathbf{y})
             $$
     """
-    assert x.shape == y.shape == z.shape
+    if x.shape != y.shape or x.shape != z.shape:
+        raise ValueError("x, y, and z must have matching shapes")
     dtheta, dzeta = 2*np.pi/npol, 2*np.pi/surf.nfp/ntor
     _thetaarr = np.linspace(0, 2*np.pi, npol, endpoint=False) + dtheta/10
     _zetaarr = np.linspace(0, 2*np.pi, surf.nfp*ntor, endpoint=False) + dzeta/10
@@ -177,4 +180,4 @@ def potential_BoozerSurf(x: np.ndarray, y: np.ndarray, z: np.ndarray,
    
 
 if __name__ == '__main__':
-    pass
+    raise NotImplementedError("potential_BoozerSurf is not implemented for this input")

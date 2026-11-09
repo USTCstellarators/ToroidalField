@@ -115,4 +115,3 @@ def numba_convolve2d_impl(mat: np.ndarray, kernel: np.ndarray) -> np.ndarray:
             output[y_out, x_out] = val
     
     return output
-

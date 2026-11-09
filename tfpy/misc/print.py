@@ -30,4 +30,3 @@ def print_progress(
         sys.stdout.write("\n")
     sys.stdout.flush()
     return
-    

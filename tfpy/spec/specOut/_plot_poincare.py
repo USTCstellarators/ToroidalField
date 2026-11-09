@@ -41,7 +41,7 @@ def plot_poincare(self, toroidalIdx=0, prange="full", ax=None,**kwargs):
         kwargs.update({"marker": "."})
     # use gray color
     if kwargs.get("c") == None:
-        pass
+        kwargs.update({"c": "gray"})
     # size of marker
     if kwargs.get("s") == None:
         kwargs.update({"s": 0.3})

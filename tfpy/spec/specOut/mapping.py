@@ -9,7 +9,8 @@ def cylinder2spec(self, lvol: int, r: np.ndarray, phi: np.ndarray, z: np.ndarray
         s, theta, zeta
     """
 
-    assert r.shape == phi.shape == z.shape
+    if r.shape != phi.shape or r.shape != z.shape:
+        raise ValueError("r, phi, and z must have matching shapes")
     shape = r.shape
     r, phi, z = r.flatten(), phi.flatten(), z.flatten()
 
@@ -29,4 +30,3 @@ def cylinder2spec(self, lvol: int, r: np.ndarray, phi: np.ndarray, z: np.ndarray
     s = (np.power(r-innerR,2) + np.power(z-innerZ,2)) / (np.power(outR-innerR,2) + np.power(outZ-innerZ,2))
     s = 2*np.sqrt(s) - 1
     return s.reshape(shape), theta.reshape(shape), zeta.reshape(shape)
-

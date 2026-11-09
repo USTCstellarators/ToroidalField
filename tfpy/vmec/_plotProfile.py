@@ -49,8 +49,7 @@ def plotProfile(self, name: str, xAxis: str='sqrtflux', ax=None, **kwargs):
                 yArr[self.ns-1+i] = self.iota(i)
                 yArr[self.ns-1-i] = self.iota(i)
     elif isinstance(name, Iterable):
-        # TODO
-        print("To Do... ")
+        raise NotImplementedError("plotProfile does not yet support multiple profile names")
     else:
         print('There is no figure because of the wrong name... ')
         return

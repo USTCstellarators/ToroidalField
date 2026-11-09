@@ -93,7 +93,7 @@ class Surface_cylindricalAngle(Surface):
         for phiindex, phi in enumerate(phiarr):
             try:
                 label = labelarr[phiindex]
-            except:
+            except (IndexError, TypeError):
                 label = '_nolegend_'
             phiarr = np.ones(100) * phi
             thetaarr = np.linspace(0, 2*np.pi, 100)
@@ -325,7 +325,7 @@ class Surface_cylindricalAngle(Surface):
         """
 
         if qsccase.order != 'r1':
-            print('TODO')
+            raise NotImplementedError("QSC surfaces are currently supported only for order='r1'")
         
         thetaarr = np.linspace(0, -2*np.pi, 2*mpol+1, endpoint=False)
         phiarr = np.linspace(0, 2*np.pi/qsccase.nfp, 2*ntor+1, endpoint=False)
@@ -378,9 +378,6 @@ class Surface_cylindricalAngle(Surface):
         z0grid = qsccase.Z0_func(phi0grid)
         X1grid = r * (qsccase.X1c_untwisted_spline(phi0grid) * costheta + qsccase.X1s_untwisted_spline(phi0grid) * sintheta)
         Y1grid = r * (qsccase.Y1c_untwisted_spline(phi0grid) * costheta + qsccase.Y1s_untwisted_spline(phi0grid) * sintheta)
-        if qsccase.order != 'r1':
-            print('TODO')
-
         xgrid = r0grid * cosphi0 + X1grid * normal_x + Y1grid * binormal_x
         ygrid = r0grid * sinphi0 + X1grid * normal_y + Y1grid * binormal_y
         zgrid =           z0grid + X1grid * normal_z + Y1grid * binormal_z
@@ -393,9 +390,3 @@ class Surface_cylindricalAngle(Surface):
             fftToroidalField(-zgrid, nfp=qsccase.nfp),
             reverseToroidalAngle = False
         )
-            
-
-
-
-if __name__ == "__main__":
-    pass

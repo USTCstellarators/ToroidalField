@@ -31,10 +31,12 @@ def vmecOut2spec(VMEC_output: str, SPEC_input: str, interfaceLabel: List[float],
 
     try:
         VMECout = xarray.open_dataset(VMEC_output)
-    except:
+    except (OSError, ValueError) as exc:
         raise FileExistsError(
             "Please cheak your argument. The first argument should be a VMEC output. "
-        )
+        ) from exc
+    VMECout.load()
+    VMECout.close()
     if abs(min(interfaceLabel)) > 1e-10 or abs(max(interfaceLabel) - 1) > 1e-10:
         raise ValueError(
             "The maximum and minimum value of interface label should be 1 and 0. "
@@ -167,8 +169,4 @@ def vmecOut2spec(VMEC_output: str, SPEC_input: str, interfaceLabel: List[float],
         
     writeSPECInput(SPEC_input, datas, interfaceShape)
 
-    return
-
-
-if __name__ == "__main__":
-    pass
+    return None
